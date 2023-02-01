@@ -34,6 +34,8 @@
 
 3.如果服务器上没有nslookup记得装一个,用来判断cdn用的
 
+`yum -y install bind-utils`
+
 4.三种使用场景需要的命令
 
 ```python
