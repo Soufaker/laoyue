@@ -1,5 +1,5 @@
 # author:soufaker
-# time:2022/06/10
+# time:2023/01/14
 
 import requests
 import time
@@ -733,7 +733,6 @@ def nuclei(filename):
         for t in test1:
             if t[0] != '#' and t[0] != '\n':
                 list1.append(t.strip('\n'))
-    print('11111111111111111111111111111111111111')
     for l in list1:
         temp = []
         x = l.split(' ')
@@ -757,8 +756,8 @@ def get_github_info(company_info_list,all_company_name_list):
         page = 1
         while True:
             header = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                      "Cookie": "csrftoken=o21nFGiKjtUaUSi0idk7LFGlvOL4nM7WMJ73dqtuZnvis52cUPW04PZes3I348lB; sessionid=uu9doppb029azvobgm4lf0tx3jxqy3ye",
-                      "X-CSRFToken": "o21nFGiKjtUaUSi0idk7LFGlvOL4nM7WMJ73dqtuZnvis52cUPW04PZes3I348lB"}
+                      "Cookie": "",
+                      "X-CSRFToken": ""}
             title = '(related_company=='+str(name)+'||url=='+str(name)+'||repository.description=='+str(name)+'||code_detail=='+str(name)+')'
             data = 'page='+str(page)+'&pagesize=50&title='+str(title)+'&title_type=code'
             print(data)
