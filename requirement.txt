@@ -1,0 +1,4 @@
+requests==2.27.1
+tldextract==3.3.0
+DingtalkChatbot==1.5.7
+openpyxl==2.5.4
