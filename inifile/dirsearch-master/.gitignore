@@ -1,0 +1,7 @@
+reports/
+__pycache__/
+*.py[cod]
+*$py.class
+default.conf
+.idea/
+.ropeproject/
