@@ -346,6 +346,10 @@ def yt_get_info(name_list):
 
                 if str(res['code']) == '429':
                     continue
+                if str(res['code']) == '401':
+                    print('令牌过期')
+                    api_num += 1
+                    continue
 
                 # jf = res['data']['rest_quota'][7:]
                 # # if hunter_config_list[api_num] == '6':
@@ -594,7 +598,7 @@ def quchong_info_list(all_info_list):
 
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
-    os.system('python3 ./inifile/dirsearch-master/dirsearch.py -l'+str(filename) +' -w ./inifile/dirsearch-master/file_top_200.txt -i 200 -o '+ str(dir_file))
+    os.system('python ./inifile/dirsearch-master/dirsearch.py -l'+str(filename) +' -w ./inifile/dirsearch-master/file_top_200.txt -i 200 -o '+ str(dir_file))
     list1 = []
     list2 = []
     with open(dir_file, 'r') as f:
@@ -733,6 +737,7 @@ def nuclei(filename):
         for t in test1:
             if t[0] != '#' and t[0] != '\n':
                 list1.append(t.strip('\n'))
+    print('11111111111111111111111111111111111111')
     for l in list1:
         temp = []
         x = l.split(' ')
@@ -756,8 +761,8 @@ def get_github_info(company_info_list,all_company_name_list):
         page = 1
         while True:
             header = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                      "Cookie": "",
-                      "X-CSRFToken": ""}
+                      "Cookie": "csrftoken=o21nFGiKjtUaUSi0idk7LFGlvOL4nM7WMJ73dqtuZnvis52cUPW04PZes3I348lB; sessionid=uu9doppb029azvobgm4lf0tx3jxqy3ye",
+                      "X-CSRFToken": "o21nFGiKjtUaUSi0idk7LFGlvOL4nM7WMJ73dqtuZnvis52cUPW04PZes3I348lB"}
             title = '(related_company=='+str(name)+'||url=='+str(name)+'||repository.description=='+str(name)+'||code_detail=='+str(name)+')'
             data = 'page='+str(page)+'&pagesize=50&title='+str(title)+'&title_type=code'
             print(data)
@@ -825,8 +830,8 @@ if __name__ == '__main__':
         hunter_config_list.append(cf.get('hunter', i))
     fofa_key = cf.get('fofa', 'fofa_key')
     fofa_email = cf.get('fofa', 'fofa_email')
-    dingding_hook = cf.get('dingding', 'fofa_email')
-    dingding_key = cf.get('dingding', 'fofa_email')
+    dingding_hook = cf.get('dingding', 'access_token')
+    dingding_key = cf.get('dingding', 'dsecret')
     black = cf.get('black_domain', 'domain')
     black_domian = black.split(',')
     # 所有搜集到的URL列表
@@ -880,4 +885,4 @@ if __name__ == '__main__':
         # 发送信息
         dingtalk(quchong_list, mgwj_list, ld_list)
     time.sleep(7200)
-    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
+    os.system('nohup python laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
