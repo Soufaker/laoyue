@@ -52,6 +52,12 @@
  python3 laoyue.py  -c "公司名" -d "SRC.txt" -m 1 -n 1  #对某查收集的域名信息和自己收集的域名进行定期资产,敏感目录,漏洞扫描
 ```
 
+5.后台使用直接使用nohup就行了如下
+
+```python
+ nohup python3 laoyue.py -d "SRC.txt" -m 1 -n 1 &
+```
+
 
 
 # 脚本运行展示
