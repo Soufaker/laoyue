@@ -603,7 +603,7 @@ def quchong_info_list(all_info_list):
 
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
-    os.system('python ./inifile/dirsearch-master/dirsearch.py -l' + str(
+    os.system('python3 ./inifile/dirsearch-master/dirsearch.py -l' + str(
         filename) + ' -w ./inifile/dict/file_top_200.txt -o ' + str(dir_file))
     list1 = []
     list2 = []
@@ -907,6 +907,6 @@ if __name__ == '__main__':
             dingtalk(quchong_list, mgwj_list, ld_list)
         except:
             print('发送消息异常')
-            os.system('nohup python laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
+            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
     time.sleep(7200)
-    os.system('nohup python laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
+    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
