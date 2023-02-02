@@ -14,6 +14,7 @@ import datetime
 import math
 from openpyxl import Workbook
 from configparser import ConfigParser
+
 requests.packages.urllib3.disable_warnings()
 import urllib
 import os
@@ -166,14 +167,14 @@ def get_all_page_id(id):
     return id_list
 
 
-def Write_To_Excel(company_info_list, all_info_list,mgwj_list,ld_list):
+def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list):
     t = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     wb = Workbook()
     ws1 = wb.create_sheet('天眼查基本信息', 0)
     ws2 = wb.create_sheet('收集域名信息', 0)
-    #ws3 = wb.create_sheet('git监控信息',0)
-    ws4 = wb.create_sheet('敏感信息',0)
-    ws5 = wb.create_sheet('漏洞信息',0)
+    # ws3 = wb.create_sheet('git监控信息',0)
+    ws4 = wb.create_sheet('敏感信息', 0)
+    ws5 = wb.create_sheet('漏洞信息', 0)
 
     ws1['A1'] = '公司名'
     ws1['B1'] = '网址'
@@ -243,6 +244,7 @@ def Write_To_Excel(company_info_list, all_info_list,mgwj_list,ld_list):
 
     wb.save("./result/baolumian/暴露面收集" + t + ".xlsx")
 
+
 def Get_icp_Num(company_name):
     company_url = "https://beian.tianyancha.com/search/" + company_name
     print(company_url)
@@ -297,7 +299,7 @@ def yt_info(url):
                 #     arr_ip = loadurl[i]['ip']
                 # else:
                 #     arr_ip = '存在CDN:' + loadurl[i]['ip']
-                arr_ip = isCDN(loadurl[i]['domain'],loadurl[i]['ip'])
+                arr_ip = isCDN(loadurl[i]['domain'], loadurl[i]['ip'])
                 arr_port = loadurl[i]['port']
                 arr_web_title = loadurl[i]['web_title']
                 arr_protocol = loadurl[i]['protocol'] + ',' + loadurl[i]['base_protocol']
@@ -324,6 +326,7 @@ def yt_info(url):
             return 1
         else:
             return 2
+
 
 def yt_get_info(name_list):
     try:
@@ -359,7 +362,7 @@ def yt_get_info(name_list):
                 if str(res['code']) == '40204':
                     if int(api_num) < int(len(hunter_config_list)):
                         api_num += 1
-                        print('上一个积分已经用完,切换第' + str(int(api_num)+1)+'个API')
+                        print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
                         url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=100&is_web=1".format(
                             hunter_config_list[api_num], keyword.decode(), page)
                         print(url)
@@ -378,6 +381,7 @@ def yt_get_info(name_list):
     except Exception as e:
         print('出异常了', e)
 
+
 def get_title(url):
     try:
         page = urllib.request.urlopen(url=url, timeout=60)
@@ -388,13 +392,14 @@ def get_title(url):
         return ''
 
 
-def isCDN(domain,ip):  # 判断目标是否存在CDN
+def isCDN(domain, ip):  # 判断目标是否存在CDN
     parm = 'nslookup ' + domain
     result = os.popen(parm).read()
-    if result.count(".") > 8:   # nslookup [ip]的返回结果中，多于8个.代表返回多于1一个ip，即存在cdn
-        return "存在CDN"+str(ip)
+    if result.count(".") > 8:  # nslookup [ip]的返回结果中，多于8个.代表返回多于1一个ip，即存在cdn
+        return "存在CDN" + str(ip)
     else:
         return ip
+
 
 def get_fofa_url(domain_lsit):
     for domain in domain_lsit:
@@ -413,9 +418,9 @@ def get_fofa_url(domain_lsit):
                 result = res['results'][i]
                 num = len(result)
                 temp = ''
-                for j in range(0, int(num)-1):
+                for j in range(0, int(num) - 1):
                     if j == 1:
-                        ip = isCDN(result[9],result[1])
+                        ip = isCDN(result[9], result[1])
                         result[1] = ip
                     if j == 0:
                         if 'http' not in result[0][0:5]:
@@ -454,8 +459,8 @@ def split_list_average_n(origin_list, n):
 
 def get_all_url_fo_yt(company_info_list, company_domains_file):
     company_domains_list = []
-    if len(company_domains_file) > 2 :
-        with open(company_domains_file,'r',encoding='utf-8') as f:
+    if len(company_domains_file) > 2:
+        with open(company_domains_file, 'r', encoding='utf-8') as f:
             l = f.readlines()
             for i in l:
                 company_domains_list.append(i.strip('\n'))
@@ -491,7 +496,7 @@ def get_all_url_fo_yt(company_info_list, company_domains_file):
 
 def get_company_jt_info(name):
     all_info = []
-    #proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
+    # proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
 
     company_url = "https://capi.tianyancha.com/cloud-tempest/web/searchCompanyV3?_=1672969688987"
     data = '{"word":"' + str(name) + '","sortType":"1","pageSize":1,"referer":"search","pageNum":1}'
@@ -579,8 +584,8 @@ def quchong_info_list(all_info_list):
         new_list2.append(a[0])
     print(new_list2)
     if len(new_list2) != 0:
-        filename = './result/allurl/'+time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'all_url_list.txt'
-        with open(filename,'w',encoding='utf-8') as f:
+        filename = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'all_url_list.txt'
+        with open(filename, 'w', encoding='utf-8') as f:
             for a in new_list2:
                 print(a)
                 f.writelines(a + '\n')
@@ -593,11 +598,13 @@ def quchong_info_list(all_info_list):
     print('==============================')
     print(mgwj_list)
     print(ld_list)
-    return add_list,mgwj_list,ld_list
+    return add_list, mgwj_list, ld_list
+
 
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
-    os.system('python ./inifile/dirsearch-master/dirsearch.py -l'+str(filename) +' -w ./inifile/dict/file_top_200.txt -o '+ str(dir_file))
+    os.system('python ./inifile/dirsearch-master/dirsearch.py -l' + str(
+        filename) + ' -w ./inifile/dict/file_top_200.txt -o ' + str(dir_file))
     list1 = []
     list2 = []
     try:
@@ -628,7 +635,8 @@ def ml_sm(filename):
 
     return list2
 
-def dingtalk(message_list,mgml_list,ld_list):
+
+def dingtalk(message_list, mgml_list, ld_list):
     # 钉钉WebHook地址
     DWebHook = dingding_hook
     Dsecret = dingding_key  # 可选：创建机器人勾选“加签”选项时使用
@@ -637,7 +645,7 @@ def dingtalk(message_list,mgml_list,ld_list):
     xiaoding = DingtalkChatbot(DWebHook, secret=Dsecret)  # 方式二：勾选“加签”选项时使用（v1.5以上新功能）
     # xiaoding = DingtalkChatbot(webhook, pc_slide=True)  # 方式三：设置消息链接在PC端侧边栏打开（v1.5以上新功能）
     # Text消息@所有人
-    #xiaoding.send_text(msg=c, is_at_all=True)
+    # xiaoding.send_text(msg=c, is_at_all=True)
 
     # 漏洞信息
     new_list3 = []
@@ -728,6 +736,7 @@ def dingtalk(message_list,mgml_list,ld_list):
             msg = message.lstrip('\n')
             xiaoding.send_text(msg=msg)
 
+
 def nuclei(filename):
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
     os.system('./inifile/lousao/nuclei -un -ut')
@@ -744,19 +753,21 @@ def nuclei(filename):
     except:
         print('该网站无漏洞信息')
         return list2
-    
+
     for l in list1:
         temp = []
         x = l.split(' ')
+        print(x)
+        temp.append(x[0])
         temp.append(x[2])
-        temp.append(x[4])
-        temp.append(x[5])
+        temp.append(x[3])
         list2.append(temp)
     print(list2)
 
     return list2
 
-def get_github_info(company_info_list,all_company_name_list):
+
+def get_github_info(company_info_list, all_company_name_list):
     name_list = []
     info_list = []
     for com in company_info_list:
@@ -770,11 +781,13 @@ def get_github_info(company_info_list,all_company_name_list):
             header = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
                       "Cookie": "csrftoken=o21nFGiKjtUaUSi0idk7LFGlvOL4nM7WMJ73dqtuZnvis52cUPW04PZes3I348lB; sessionid=uu9doppb029azvobgm4lf0tx3jxqy3ye",
                       "X-CSRFToken": "o21nFGiKjtUaUSi0idk7LFGlvOL4nM7WMJ73dqtuZnvis52cUPW04PZes3I348lB"}
-            title = '(related_company=='+str(name)+'||url=='+str(name)+'||repository.description=='+str(name)+'||code_detail=='+str(name)+')'
-            data = 'page='+str(page)+'&pagesize=50&title='+str(title)+'&title_type=code'
+            title = '(related_company==' + str(name) + '||url==' + str(name) + '||repository.description==' + str(
+                name) + '||code_detail==' + str(name) + ')'
+            data = 'page=' + str(page) + '&pagesize=50&title=' + str(title) + '&title_type=code'
             print(data)
             proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
-            a = requests.post('https://0.zone/api/home/search/', data=data.encode('utf-8'), headers=header,verify=False,proxies=proxies).json()
+            a = requests.post('https://0.zone/api/home/search/', data=data.encode('utf-8'), headers=header,
+                              verify=False, proxies=proxies).json()
             if str(a['code']) == '1':
                 continue
             if str(a['code']) == '3':
@@ -787,7 +800,7 @@ def get_github_info(company_info_list,all_company_name_list):
                 tags = ''
                 for t in tag:
                     tags = tags + t + ' || '
-                tags = tags + '||'+ type
+                tags = tags + '||' + type
                 source = r['_source']['source']
                 url = r['_source']['url']
                 code_detail = r['_source']['code_detail']
@@ -799,6 +812,7 @@ def get_github_info(company_info_list,all_company_name_list):
             page += 1
 
     return info_list
+
 
 if __name__ == '__main__':
     # 参数设置
@@ -831,7 +845,6 @@ if __name__ == '__main__':
     global tyz_cookie
     tyz_cookie = ''
 
-
     c_len = cf.options('hunter')
     for i in c_len:
         hunter_config_list.append(cf.get('hunter', i))
@@ -862,7 +875,7 @@ if __name__ == '__main__':
     company_occ = float(options.company_occ)
 
     global all_company_name_list
-    all_company_name_list =[]
+    all_company_name_list = []
 
     global ml
     ml = options.ml_sm
@@ -881,14 +894,14 @@ if __name__ == '__main__':
 
     # 调用fofa,yt获取信息
     get_all_url_fo_yt(company_info_list, company_domains_file)
-    quchong_list, mgwj_list,ld_list = quchong_info_list(all_info_list)
+    quchong_list, mgwj_list, ld_list = quchong_info_list(all_info_list)
 
     # github监控
     print(all_company_name_list)
     # github_list = get_github_info(company_info_list,all_company_name_list)
     github_list = []
     if len(quchong_list) != 0 or len(github_list) != 0 or len(mgwj_list) != 0 or len(ld_list) != 0:
-        Write_To_Excel(company_info_list, quchong_list,mgwj_list,ld_list)
+        Write_To_Excel(company_info_list, quchong_list, mgwj_list, ld_list)
         # 发送信息
         dingtalk(quchong_list, mgwj_list, ld_list)
     time.sleep(7200)
