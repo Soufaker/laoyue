@@ -760,7 +760,7 @@ def nuclei(filename):
         print(x)
         temp.append(x[0])
         temp.append(x[2])
-        temp.append(x[3])
+        temp.append(x[1])
         list2.append(temp)
     print(list2)
 
