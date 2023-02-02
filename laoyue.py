@@ -638,7 +638,7 @@ def ml_sm(filename):
 
 def dingtalk(message_list, mgml_list, ld_list):
     # 钉钉WebHook地址
-    DWebHook = dingding_hook
+    DWebHook = 'https://oapi.dingtalk.com/robot/send?access_token='+ str(dingding_hook)
     Dsecret = dingding_key  # 可选：创建机器人勾选“加签”选项时使用
     # 初始化机器人小丁
     # xiaoding = DingtalkChatbot(webhook)  # 方式一：通常初始化方式
@@ -903,6 +903,10 @@ if __name__ == '__main__':
     if len(quchong_list) != 0 or len(github_list) != 0 or len(mgwj_list) != 0 or len(ld_list) != 0:
         Write_To_Excel(company_info_list, quchong_list, mgwj_list, ld_list)
         # 发送信息
-        dingtalk(quchong_list, mgwj_list, ld_list)
+        try:
+            dingtalk(quchong_list, mgwj_list, ld_list)
+        except:
+            print('发送消息异常')
+            os.system('nohup python laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
     time.sleep(7200)
     os.system('nohup python laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
