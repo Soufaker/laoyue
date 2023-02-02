@@ -1,5 +1,5 @@
 # author:soufaker
-# time:2023/01/14
+# time:2022/06/10
 
 import requests
 import time
@@ -348,7 +348,6 @@ def yt_get_info(name_list):
                     continue
                 if str(res['code']) == '401':
                     print('令牌过期')
-                    api_num += 1
                     continue
 
                 # jf = res['data']['rest_quota'][7:]
@@ -598,7 +597,7 @@ def quchong_info_list(all_info_list):
 
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
-    os.system('python ./inifile/dirsearch-master/dirsearch.py -l'+str(filename) +' -w ./inifile/dirsearch-master/file_top_200.txt -i 200 -o '+ str(dir_file))
+    os.system('python ./inifile/dirsearch-master/dirsearch.py -l'+str(filename) +' -w ./inifile/dict/file_top_200.txt -i 200 -o '+ str(dir_file))
     list1 = []
     list2 = []
     with open(dir_file, 'r') as f:
