@@ -597,16 +597,20 @@ def quchong_info_list(all_info_list):
 
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
-    os.system('python ./inifile/dirsearch-master/dirsearch.py -l'+str(filename) +' -w ./inifile/dict/file_top_200.txt -i 200 -o '+ str(dir_file))
+    os.system('python ./inifile/dirsearch-master/dirsearch.py -l'+str(filename) +' -w ./inifile/dict/file_top_200.txt -o '+ str(dir_file))
     list1 = []
     list2 = []
-    with open(dir_file, 'r') as f:
-        print(dir_file)
-        test1 = f.readlines()
-        for t in test1:
-            if t[0] != '#' and t[0] != '\n':
-                list1.append(t.strip('\n'))
-    print('11111111111111111111111111111111111111')
+    try:
+        with open(dir_file, 'r') as f:
+            print(dir_file)
+            test1 = f.readlines()
+            for t in test1:
+                if t[0] != '#' and t[0] != '\n':
+                    list1.append(t.strip('\n'))
+    except:
+        print('该地址无敏感目录')
+        return list2
+
     print(list1)
     if len(list1) != 0:
         for i in list1:
