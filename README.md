@@ -26,15 +26,17 @@
 
 # 快速开始
 
-1.在config.ini中填入自己的各种key,包括某查的cookie,某fa的key,某图的key,钉钉的key(可以搞多个账号白嫖每天的500积分)
+1.使用git拉取项目到vps(centos)服务器
+
+`git clone https://github.com/Soufaker/laoyue.git`
+
+2.在config.ini中填入自己的各种key,包括某查的cookie,某fa的key,某图的key,钉钉的key(可以搞多个账号白嫖每天的500积分)
 
 ![image-20230201140843918](img/1.png)
 
-2.安装程序所需要的库
+3.使用biuld.sh安装所需依赖
 
-3.如果服务器上没有nslookup记得装一个,用来判断cdn用的
-
-`yum -y install bind-utils`
+`./build.sh`
 
 4.三种使用场景需要的命令
 
