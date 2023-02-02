@@ -734,13 +734,17 @@ def nuclei(filename):
     os.system('./inifile/lousao/nuclei -l ' + str(filename) + ' -o ' + str(loud_file))
     list1 = []
     list2 = []
-    with open(loud_file, 'r') as f:
-        print(loud_file)
-        test1 = f.readlines()
-        for t in test1:
-            if t[0] != '#' and t[0] != '\n':
-                list1.append(t.strip('\n'))
-    print('11111111111111111111111111111111111111')
+    try:
+        with open(loud_file, 'r') as f:
+            print(loud_file)
+            test1 = f.readlines()
+            for t in test1:
+                if t[0] != '#' and t[0] != '\n':
+                    list1.append(t.strip('\n'))
+    except:
+        print('该网站无漏洞信息')
+        return list2
+    
     for l in list1:
         temp = []
         x = l.split(' ')
