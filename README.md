@@ -34,31 +34,37 @@
 
 ![image-20230201140843918](img/1.png)
 
-3.使用biuld.sh安装所需依赖
+3.注意你自己使用的python3表示方式,有的师傅服务器python3用的是pyhon或者python3.x啥标识,自行更改build.sh中和laoyue.py中的python表示方式.默认为python3
+
+4.使用biuld.sh安装所需依赖
 
 `./build.sh`
 
-4.三种使用场景需要的命令(-c由于调用的某眼查 vps是会被墙的所以要跑就得先去国内服务器跑一下,等收集到域名在使用第2个命令监控就行了)
+5.三种使用场景需要的命令(-c由于调用的某眼查 vps是会被墙的所以要跑就得先去国内服务器跑一下,等收集到域名在使用第3个命令监控就行了)
 
-```python
- python3 laoyue.py  -c "公司名" -m 1 -n 1 -o 50 #使用于对单个公司及其之下的公司进行定期资产,敏感目录,漏洞扫描
+```
+1.python3 laoyue.py -c "公司名" -o 50 -x 1 #爬取单个公司下的子公司所有域名信息可以在result/domain下查看
 ```
 
 ```python
- python3 laoyue.py  -d "SRC.txt" -m 1 -n 1 -z 1 #对自己收集的域名进行定期资产,敏感目录,漏洞扫描
+2.python3 laoyue.py  -c "公司名" -m 1 -n 1 -o 50 #使用于对单个公司及其之下的公司进行定期资产,敏感目录,漏洞扫描,国内使用可能被封
 ```
 
 ```python
- python3 laoyue.py  -c "公司名" -d "SRC.txt" -m 1 -n 1  #对某查收集的域名信息和自己收集的域名进行定期资产,敏感目录,漏洞扫描
+3.python3 laoyue.py  -d "SRC.txt" -m 1 -n 1 -z 1 #对自己收集的域名进行定期资产,敏感目录,漏洞扫描(推荐使用这种,结合1命令和自己收集的资产全部放在SRC.txt里)
 ```
-
-5.后台使用直接使用nohup就行了如下
 
 ```python
- nohup python3 laoyue.py -d "SRC.txt" -m 1 -n 1 &
+4.python3 laoyue.py  -c "公司名" -d "SRC.txt" -m 1 -n 1  #对某查收集的域名信息和自己收集的域名进行定期资产,敏感目录,漏洞扫描,国内使用可能被封
 ```
 
-6.代码默认跑的自己收集的域名资产循环,如果使用其他命令可以自行更改循环
+6.后台使用直接使用(基于1,3命令组合使用)nohup就行了如下
+
+```python
+ nohup python3 laoyue.py -d "SRC.txt" -m 1 -n 1 -z 1 &
+```
+
+7.代码默认跑的自己收集的域名资产循环,如果使用其他命令可以自行更改循环
 
 ![image-20230202142614022](img/9.png)
 
