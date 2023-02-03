@@ -1,0 +1,29 @@
+name: 🛠 Template Validate
+
+on:
+  pull_request:
+    paths:
+      - '**.yaml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with: 
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: nuclei install
+        run: go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest
+
+      - name: Template Validation
+        run: |
+          cp -r ${{ github.workspace }} $HOME
+          nuclei -validate
+          nuclei -validate -w ./workflows
