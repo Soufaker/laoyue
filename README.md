@@ -26,7 +26,7 @@
 
 # 快速开始
 
-1.使用git拉取项目到vps(centos)服务器
+1.使用git拉取项目到vps(centos7)服务器
 
 `git clone https://github.com/Soufaker/laoyue.git`
 
