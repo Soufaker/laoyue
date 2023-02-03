@@ -112,10 +112,13 @@ def Get_ALL_Sub_Cmpany_Domain(company_id_name_list):
             for co in company_id_name_list:
                 com_id.append(co[0])
             for ci in company_id_name_list:
-                company_info = get_company_jt_info(ci[1])
-                info = company_info[1:]
-                company_info_list.append(info)
-                company_url_list.append(info[2])
+                try:
+                    company_info = get_company_jt_info(ci[1])
+                    info = company_info[1:]
+                    company_info_list.append(info)
+                    company_url_list.append(info[2])
+                except:
+                    continue
 
     return company_info_list, company_url_list
 
