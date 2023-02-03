@@ -1,5 +1,5 @@
 # author:soufaker
-# time:2023/01/14
+# time:2023/01/15
 
 import requests
 import time
@@ -144,7 +144,8 @@ def get_all_page_id(id):
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "same-site",
     }
-    header['Cookie'] = tyz_cookie
+    header['X-TYCID'] = x_tycid
+    header['X-AUTH-TOKEN'] = x_auth_token
     try:
         response = requests.post(url=company_url, headers=header, data=data).text
         j = json.loads(response)
@@ -500,19 +501,15 @@ def get_company_jt_info(name):
 
     company_url = "https://capi.tianyancha.com/cloud-tempest/web/searchCompanyV3?_=1672969688987"
     data = '{"word":"' + str(name) + '","sortType":"1","pageSize":1,"referer":"search","pageNum":1}'
+    print(data)
     header = {
         "host": "capi.tianyancha.com",
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
         "version": "TYC-Web",
-        "X-TYCID": "c40cc980b97411eca9722d25ca2f6a6f",
-        "X-AUTH-TOKEN": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIxMzg4MDYxOTA0OCIsImlhdCI6MTY3Mjk3NTQxMSwiZXhwIjoxNjc1NTY3NDExfQ.8dy3gvOO44AKVgDGOXR5SXjUhfDQ_lDrnnJz-tc1-Xh0SHPxc77hp2DLpktbfa10mBoGu9pcXEPKpxqdLq5q0A",
     }
-
-    with open('./config/cookie.ini', 'r', encoding='utf-8') as co:
-        f = co.read()
-        f2 = f.replace(' ', '')
-        header['Cookie'] = f2[6:]
+    header['X-TYCID'] = x_tycid
+    header['X-AUTH-TOKEN'] = x_auth_token
     try:
         response = requests.post(url=company_url, headers=header, data=data.encode('utf-8'), verify=False).text
         j = json.loads(response)
@@ -842,8 +839,10 @@ if __name__ == '__main__':
     dingding_key = ''
     global dingding_hook
     dingding_hook = ''
-    global tyz_cookie
-    tyz_cookie = ''
+    global x_tycid
+    x_tycid = ''
+    global x_auth_token
+    x_auth_token = ''
 
     c_len = cf.options('hunter')
     for i in c_len:
@@ -852,6 +851,8 @@ if __name__ == '__main__':
     fofa_email = cf.get('fofa', 'fofa_email')
     dingding_hook = cf.get('dingding', 'access_token')
     dingding_key = cf.get('dingding', 'dsecret')
+    x_tycid = cf.get('tyz', 'x-tycid')
+    x_auth_token = cf.get('tyz', 'x-auth-token')
     black = cf.get('black_domain', 'domain')
     black_domian = black.split(',')
     # 所有搜集到的URL列表
