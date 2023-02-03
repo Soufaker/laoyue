@@ -734,7 +734,7 @@ def dingtalk(message_list, mgml_list, ld_list):
 
 def nuclei(filename):
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
-    os.system('./inifile/lousao/nuclei -un -ut')
+    #os.system('./inifile/lousao/nuclei -un -ut')
     os.system('./inifile/lousao/nuclei -s low,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
     list1 = []
     list2 = []
