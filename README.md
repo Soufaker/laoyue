@@ -36,7 +36,7 @@
 
 3.注意你自己使用的python3表示方式,有的师傅服务器python3用的是pyhon或者python3.x啥标识,自行更改build.sh中和laoyue.py中的python表示方式.默认为python3
 
-4.使用biuld.sh安装所需依赖
+4.使用chomod 777 biuld.sh加权限安装所需依赖
 
 `./build.sh`
 
