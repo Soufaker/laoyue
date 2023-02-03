@@ -130,11 +130,6 @@ def Get_Sub_Company_Domain(company_id):
 
 def get_all_page_id(id):
     id_list = []
-    # with open('./config/cookie.ini', 'r', encoding='utf-8') as co:
-    #     f = co.read()
-    #     f2 = f.replace(' ', '')
-    #     header['Cookie'] = f2[6:]
-
     company_url = "https://capi.tianyancha.com/cloud-company-background/company/investListV2?_=1663738376979"
     data = '{"gid":"' + str(id) + '","pageSize":100,"pageNum":1,"province":"","percentLevel":"-100","category":"-100"}'
     header = {
@@ -485,15 +480,18 @@ def get_all_url_fo_yt(company_info_list, company_domains_file):
 
     print('当前搜集了如下域名')
     all_qc_domain_list = list(set(all_domain_list))
+    filename = './result/alldomain/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_all_domain_list.txt'
+    with open(filename, 'w', encoding='utf-8') as f:
+        for a in all_qc_domain_list:
+            f.writelines(a + '\n')
     print(all_qc_domain_list)
+    if x_domain != '1':
+        # 调用鹰图,并添加到所有搜集的列表
+        print('开始调用鹰图')
+        yt_get_info(all_qc_domain_list)
 
-    # 调用鹰图,并添加到所有搜集的列表
-    print('开始调用鹰图')
-    yt_get_info(all_qc_domain_list)
-
-    print('开始使用fofa查询')
-    get_fofa_url(all_qc_domain_list)
-
+        print('开始使用fofa查询')
+        get_fofa_url(all_qc_domain_list)
 
 def get_company_jt_info(name):
     all_info = []
@@ -815,6 +813,7 @@ if __name__ == '__main__':
     # 参数设置
     parser = optparse.OptionParser()
     parser.add_option('-c', '--company', action='store', dest="company_name")
+    parser.add_option('-x', '--xdomain', action='store', dest="x_domain")
     parser.add_option('-l', '--list', action='store', dest="company_name_list")
     parser.add_option('-o', '--occ', action='store', default='100', dest="company_occ")
     parser.add_option('-d', '--domain', action='store', default='', dest="company_domains")
@@ -868,6 +867,11 @@ if __name__ == '__main__':
     # 全局搜寻的域名
     all_domain_list = []
 
+    # 初始化
+    quchong_list = []
+    mgwj_list = []
+    ld_list = []
+
     # 参数获取
     global company_occ
     company_name = options.company_name
@@ -886,6 +890,10 @@ if __name__ == '__main__':
 
     global zs_domains
     zs_domain = options.zs_domains
+
+    global x_domain
+    x_domain = options.x_domain
+
     if str(zs_domain) != '1':
         company_id_name_list = Get_Company_Id(company_name, company_list)
         print(company_id_name_list)
@@ -896,7 +904,6 @@ if __name__ == '__main__':
     # 调用fofa,yt获取信息
     get_all_url_fo_yt(company_info_list, company_domains_file)
     quchong_list, mgwj_list, ld_list = quchong_info_list(all_info_list)
-
     # github监控
     print(all_company_name_list)
     # github_list = get_github_info(company_info_list,all_company_name_list)
@@ -909,5 +916,6 @@ if __name__ == '__main__':
         except:
             print('发送消息异常')
             os.system('nohup python3 laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
+
     time.sleep(7200)
     os.system('nohup python3 laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
