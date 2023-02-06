@@ -134,7 +134,7 @@ def Get_Sub_Company_Domain(company_id):
 def get_all_page_id(id):
     id_list = []
     company_url = "https://capi.tianyancha.com/cloud-company-background/company/investListV2?_=1663738376979"
-    data = '{"gid":"' + str(id) + '","pageSize":100,"pageNum":1,"province":"","percentLevel":"-100","category":"-100"}'
+    data = '{"gid":"' + str(id) + '","pageSize":50,"pageNum":1,"province":"","percentLevel":"-100","category":"-100"}'
     header = {
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
@@ -362,14 +362,14 @@ def yt_get_info(name_list):
                     if int(api_num) < int(len(hunter_config_list)):
                         api_num += 1
                         print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
-                        url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=100&is_web=1".format(
+                        url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=50&is_web=1".format(
                             hunter_config_list[api_num], keyword.decode(), page)
                         print(url)
                         pd_num = yt_info(url)
                     else:
                         print('所有api积分为0,请明日在尝试')
                 else:
-                    url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=100&is_web=1".format(
+                    url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=50&is_web=1".format(
                         hunter_config_list[api_num], keyword.decode(), page)
                     print(url)
                     pd_num = yt_info(url)
@@ -406,7 +406,7 @@ def get_fofa_url(domain_lsit):
             continue
         search_key = "domain=" + domain
         search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=100' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=50' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
         print(search)
         try:
             r = requests.get(search, verify=False)
