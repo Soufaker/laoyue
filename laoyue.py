@@ -601,7 +601,7 @@ def quchong_info_list(all_info_list):
 
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
-    os.system('python3 ./inifile/dirsearch-master/dirsearch.py -l' + str(
+    os.system('python3 ./inifile/dirsearch-master/dirsearch.py  -r 3 -l' + str(
         filename) + ' -w ./inifile/dict/file_top_200.txt -o ' + str(dir_file))
     list1 = []
     list2 = []
