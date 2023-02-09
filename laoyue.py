@@ -142,7 +142,6 @@ def get_all_page_id(id):
         "Sec-Fetch-Mode": "cors",
         "Sec-Fetch-Site": "same-site",
     }
-    header['X-TYCID'] = x_tycid
     header['X-AUTH-TOKEN'] = x_auth_token
     try:
         response = requests.post(url=company_url, headers=header, data=data).text
@@ -509,7 +508,6 @@ def get_company_jt_info(name):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
         "version": "TYC-Web",
     }
-    header['X-TYCID'] = x_tycid
     header['X-AUTH-TOKEN'] = x_auth_token
     try:
         response = requests.post(url=company_url, headers=header, data=data.encode('utf-8'), verify=False).text
@@ -841,8 +839,6 @@ if __name__ == '__main__':
     dingding_key = ''
     global dingding_hook
     dingding_hook = ''
-    global x_tycid
-    x_tycid = ''
     global x_auth_token
     x_auth_token = ''
 
@@ -853,7 +849,6 @@ if __name__ == '__main__':
     fofa_email = cf.get('fofa', 'fofa_email')
     dingding_hook = cf.get('dingding', 'access_token')
     dingding_key = cf.get('dingding', 'dsecret')
-    x_tycid = cf.get('tyz', 'x-tycid')
     x_auth_token = cf.get('tyz', 'x-auth-token')
     black = cf.get('black_domain', 'domain')
     black_domian = black.split(',')
