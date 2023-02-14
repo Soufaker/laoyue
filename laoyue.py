@@ -134,7 +134,7 @@ def Get_Sub_Company_Domain(company_id):
 def get_all_page_id(id):
     id_list = []
     company_url = "https://capi.tianyancha.com/cloud-company-background/company/investListV2?_=1663738376979"
-    data = '{"gid":"' + str(id) + '","pageSize":50,"pageNum":1,"province":"","percentLevel":"-100","category":"-100"}'
+    data = '{"gid":"' + str(id) + '","pageSize":100,"pageNum":1,"province":"","percentLevel":"-100","category":"-100"}'
     header = {
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
@@ -333,13 +333,10 @@ def yt_get_info(name_list):
                 continue
             search_key = 'domain=' + name
             keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
-            page = 0
+            page = 1
             api_num = 0
             while True:
-                if page == 4:
-                    break
                 # 测试第一个API积分是否够用
-                page += 1
                 url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=1&is_web=1".format(
                     hunter_config_list[api_num], keyword.decode(), page)
                 r = requests.get(url, timeout=30)
@@ -348,34 +345,22 @@ def yt_get_info(name_list):
                 if str(res['code']) == '429':
                     continue
                 if str(res['code']) == '401':
-                    print('令牌过期')
+                    if int(api_num) < int(len(hunter_config_list)):
+                        api_num += 1
                     continue
-
-                # jf = res['data']['rest_quota'][7:]
-                # # if hunter_config_list[api_num] == '6':
-                # #     tump_jf = jf
-                # #     jf = int(tump_jf) - 5521
-                # print('当前api剩余每日免费积分:' + str(jf))
-
                 if str(res['code']) == '40204':
                     if int(api_num) < int(len(hunter_config_list)):
                         api_num += 1
                         print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
-                        url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=50&is_web=1".format(
-                            hunter_config_list[api_num], keyword.decode(), page)
-                        print(url)
-                        pd_num = yt_info(url)
-                    else:
-                        print('所有api积分为0,请明日在尝试')
-                else:
-                    url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=50&is_web=1".format(
-                        hunter_config_list[api_num], keyword.decode(), page)
-                    print(url)
-                    pd_num = yt_info(url)
+                        continue
 
-                if int(pd_num) == 2:
-                    break
-
+                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=1&is_web=1".format(
+                    hunter_config_list[api_num], keyword.decode(), page)
+                print(url)
+                pd_num = yt_info(url)
+                if pd_num == 2:
+                    print('未查到数据')
+                break
     except Exception as e:
         print('出异常了', e)
 
@@ -405,7 +390,7 @@ def get_fofa_url(domain_lsit):
             continue
         search_key = "domain=" + domain
         search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=50' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=1' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
         print(search)
         try:
             r = requests.get(search, verify=False)
@@ -545,27 +530,47 @@ def get_company_jt_info(name):
 
 
 def save_cache(target_list):
-    cache_list = []
-    fan_add_lsit = []
-    for tar in target_list:
-        str_tar = ''
-        for t in tar:
-            str_tar = str_tar + ' | ' + str(t)
-        cache_list.append(str_tar)
+    add_list = []
+    add_list2 = []
+    temp_list = []
     file_list = open('./caches/cache.txt', 'r', encoding='utf-8').read().split('\n')
-    mid_list = set(file_list).intersection(set(cache_list))
-    add_list = set(mid_list).symmetric_difference(set(cache_list))
-    for l in add_list:
-        caches_file = open('./caches/cache.txt', 'a', encoding='utf-8')
-        caches_file.write(l + '\n')
-        caches_file.close()
-    # 反向添加回去
-    for add in list(add_list):
-        l = add.split(' | ')
-        l.remove('')
-        fan_add_lsit.append(l)
-    return fan_add_lsit
+    print(file_list)
+    if len(file_list) != 0:
+        for f in file_list:
+            if f == '':
+                continue
+            temp_list.append(f.split('|')[1].strip())
+        print(temp_list)
+        for tar in target_list:
+            print(tar[0])
+            if tar[0] not in temp_list:
+                print(tar[0])
+                str_tar = ''
+                for t in tar:
+                    str_tar = str_tar + ' | ' + str(t)
+                add_list.append(str_tar)
+                add_list2.append(tar)
+                for l in add_list:
+                    caches_file = open('./caches/cache.txt', 'a', encoding='utf-8')
+                    caches_file.write(l + '\n')
+                    caches_file.close()
 
+        print('增加的资产')
+        print(add_list)
+        return add_list2
+    else:
+        for tar in target_list:
+            str_tar = ''
+            for t in tar:
+                str_tar = str_tar + ' | ' + str(t)
+            add_list.append(str_tar)
+        for l in add_list:
+            caches_file = open('./caches/cache.txt', 'a', encoding='utf-8')
+            caches_file.write(l + '\n')
+            caches_file.close()
+        print('增加的资产')
+        print(add_list)
+        return target_list
 
 def quchong_info_list(all_info_list):
     new_list = []
@@ -646,7 +651,6 @@ def dingtalk(message_list, mgml_list, ld_list):
     # 漏洞信息
     new_list3 = []
     num3 = len(ld_list)
-    print('111111111111')
     print(ld_list)
     if int(num3) > 100:
         n3 = num3 // 50
@@ -779,7 +783,7 @@ def get_github_info(company_info_list, all_company_name_list):
                       "X-CSRFToken": ""}
             title = '(related_company==' + str(name) + '||url==' + str(name) + '||repository.description==' + str(
                 name) + '||code_detail==' + str(name) + ')'
-            data = 'page=' + str(page) + '&pagesize=50&title=' + str(title) + '&title_type=code'
+            data = 'page=' + str(page) + '&pagesize=1&title=' + str(title) + '&title_type=code'
             print(data)
             proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
             a = requests.post('https://0.zone/api/home/search/', data=data.encode('utf-8'), headers=header,
