@@ -539,7 +539,10 @@ def save_cache(target_list):
         for f in file_list:
             if f == '':
                 continue
-            temp_list.append(f.split('|')[1].strip())
+            try:
+                temp_list.append(f.split('|')[1].strip())
+            except:
+                continue
         print(temp_list)
         for tar in target_list:
             print(tar[0])
