@@ -354,7 +354,7 @@ def yt_get_info(name_list):
                         print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
                         continue
 
-                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=1&is_web=1".format(
+                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=30&is_web=1".format(
                     hunter_config_list[api_num], keyword.decode(), page)
                 print(url)
                 pd_num = yt_info(url)
@@ -390,7 +390,7 @@ def get_fofa_url(domain_lsit):
             continue
         search_key = "domain=" + domain
         search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=1' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=30' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
         print(search)
         try:
             r = requests.get(search, verify=False)
@@ -786,7 +786,7 @@ def get_github_info(company_info_list, all_company_name_list):
                       "X-CSRFToken": ""}
             title = '(related_company==' + str(name) + '||url==' + str(name) + '||repository.description==' + str(
                 name) + '||code_detail==' + str(name) + ')'
-            data = 'page=' + str(page) + '&pagesize=1&title=' + str(title) + '&title_type=code'
+            data = 'page=' + str(page) + '&pagesize=30&title=' + str(title) + '&title_type=code'
             print(data)
             proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
             a = requests.post('https://0.zone/api/home/search/', data=data.encode('utf-8'), headers=header,
