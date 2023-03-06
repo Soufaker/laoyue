@@ -10,12 +10,12 @@ import urllib.request
 import re
 import tldextract
 from dingtalkchatbot.chatbot import DingtalkChatbot
-import datetime
+from datetime import datetime
 import math
 from openpyxl import Workbook
 from configparser import ConfigParser
-
-requests.packages.urllib3.disable_warnings()
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 import urllib
 import os
 
@@ -32,7 +32,7 @@ def beianchaxun(url):
         'Accept-Language': 'zh-CN,zh;q=0.8',
     }
     try:
-        req = requests.get(url=URL, headers=headers)
+        req = requests.get(url=URL, headers=headers,verify=False)
         html = req.content
         titlere = r'<span class="ranking-ym" rel="nofollow">(.+?)</span>'
         title = re.findall(titlere, html.decode('utf-8'))
@@ -144,7 +144,7 @@ def get_all_page_id(id):
     }
     header['X-AUTH-TOKEN'] = x_auth_token
     try:
-        response = requests.post(url=company_url, headers=header, data=data).text
+        response = requests.post(url=company_url, headers=header, data=data,verify=False).text
         j = json.loads(response)
         print(j)
         for i in range(len(j['data']['result'])):
@@ -248,7 +248,7 @@ def Get_icp_Num(company_name):
     print(company_url)
     header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     try:
-        response = requests.get(url=company_url, headers=header).text
+        response = requests.get(url=company_url, headers=header,verify=False).text
         resp = response.replace(' ', '').replace('\n', '').replace('\t', '').replace("\"", "")
 
         flag = True
@@ -273,7 +273,7 @@ def yt_info(url):
     temp_url_list.append(url)
     while temp_url_list:
         temp_url_list.pop()
-        r = requests.get(url, timeout=3)
+        r = requests.get(url, timeout=30,verify=False)
         res = json.loads(r.text)
         if str(res['code']) == '429':
             temp_url_list.append(url)
@@ -319,7 +319,7 @@ def yt_info(url):
                 info.append(arr_status_code)
                 info.append(arr_all_component)
                 info.append(arr_beianhhao)
-                print(info)
+                # print(info)
                 all_info_list.append(info)
             return 1
         else:
@@ -329,40 +329,47 @@ def yt_info(url):
 def yt_get_info(name_list):
     try:
         for name in name_list:
-            if name == '':
-                continue
-            search_key = 'domain=' + name
-            keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
-            page = 1
-            api_num = 0
-            while True:
-                # 测试第一个API积分是否够用
-                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=1&is_web=1".format(
-                    hunter_config_list[api_num], keyword.decode(), page)
-                r = requests.get(url, timeout=30)
-                res = json.loads(r.text)
+            try:
+                if name == '':
+                    continue
+                search_key = 'domain=' + name
+                keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
+                page = 1
+                api_num = 0
+                while True:
+                    # 测试第一个API积分是否够用
+                    url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=1&is_web=1".format(
+                        hunter_config_list[api_num], keyword.decode(), page)
+                    r = requests.get(url, timeout=30,verify=False)
+                    res = json.loads(r.text)
 
-                if str(res['code']) == '429':
-                    continue
-                if str(res['code']) == '401':
-                    if int(api_num) < int(len(hunter_config_list)):
-                        api_num += 1
-                    continue
-                if str(res['code']) == '40204':
-                    if int(api_num) < int(len(hunter_config_list)):
-                        api_num += 1
-                        print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
+                    if str(res['code']) == '429':
                         continue
+                    if str(res['code']) == '401':
+                        if int(api_num) < int(len(hunter_config_list)):
+                            api_num += 1
+                        continue
+                    if str(res['code']) == '40204':
+                        if int(api_num) < int(len(hunter_config_list)):
+                            api_num += 1
+                            print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
+                            continue
 
-                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=30&is_web=1".format(
-                    hunter_config_list[api_num], keyword.decode(), page)
-                print(url)
-                pd_num = yt_info(url)
-                if pd_num == 2:
-                    print('未查到数据')
-                break
+                    url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=20&is_web=1".format(
+                        hunter_config_list[api_num], keyword.decode(), page)
+                    print(url)
+                    try:
+                        pd_num = yt_info(url)
+                        if pd_num == 2:
+                            print('未查到数据')
+                        break
+                    except:
+                        continue
+            except:
+                continue
     except Exception as e:
         print('出异常了', e)
+
 
 
 def get_title(url):
@@ -390,7 +397,7 @@ def get_fofa_url(domain_lsit):
             continue
         search_key = "domain=" + domain
         search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=30' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=20' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
         print(search)
         try:
             r = requests.get(search, verify=False)
@@ -427,11 +434,11 @@ def get_fofa_url(domain_lsit):
                     if j == 5:
                         result[j] = result[j][9:12]
                     info.append(result[j])
-                print(info)
+                # print(info)
                 all_info_list.append(info)
         except:
             print('fofa连接超时,正在重试！')
-            time.sleep(60)
+            time.sleep(1)
             continue
 
 
@@ -479,6 +486,7 @@ def get_all_url_fo_yt(company_info_list, company_domains_file):
 
         print('开始使用fofa查询')
         get_fofa_url(all_qc_domain_list)
+
 
 def get_company_jt_info(name):
     all_info = []
@@ -533,8 +541,15 @@ def save_cache(target_list):
     add_list = []
     add_list2 = []
     temp_list = []
-    file_list = open('./caches/cache.txt', 'r', encoding='utf-8').read().split('\n')
-    print(file_list)
+    file_list = []
+    with open('./caches/cache.txt', 'r', encoding='utf-8') as f:
+        while True:
+            line = f.readline()
+            if line:
+                file_list.append(line.strip('\n'))
+            else:
+                break
+        f.close()
     if len(file_list) != 0:
         for f in file_list:
             if f == '':
@@ -543,7 +558,7 @@ def save_cache(target_list):
                 temp_list.append(f.split('|')[1].strip())
             except:
                 continue
-        print(temp_list)
+
         for tar in target_list:
             print(tar[0])
             if tar[0] not in temp_list:
@@ -575,6 +590,7 @@ def save_cache(target_list):
         print(add_list)
         return target_list
 
+
 def quchong_info_list(all_info_list):
     new_list = []
     new_list2 = []
@@ -589,19 +605,25 @@ def quchong_info_list(all_info_list):
     print(new_list2)
     if len(new_list2) != 0:
         filename = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'all_url_list.txt'
+        filename2 = './result/awvslist/all_av_list.txt'
         with open(filename, 'w', encoding='utf-8') as f:
             for a in new_list2:
                 print(a)
                 f.writelines(a + '\n')
-        if str(ml) == '1':
+        with open(filename2, 'a', encoding='utf-8') as f:
+            for a in new_list2:
+                if 'http' in a:
+                    print(a)
+                    f.writelines(a + '\n')
+        if str(ml) == True:
             mgwj_list = ml_sm(filename)
 
-        if str(ld) == '1':
+        if str(ld) == True:
             ld_list = nuclei(filename)
 
     print('==============================')
-    print(mgwj_list)
-    print(ld_list)
+    # print(mgwj_list)
+    # print(ld_list)
     return add_list, mgwj_list, ld_list
 
 
@@ -642,7 +664,7 @@ def ml_sm(filename):
 
 def dingtalk(message_list, mgml_list, ld_list):
     # 钉钉WebHook地址
-    DWebHook = 'https://oapi.dingtalk.com/robot/send?access_token='+ str(dingding_hook)
+    DWebHook = 'https://oapi.dingtalk.com/robot/send?access_token=' + str(dingding_hook)
     Dsecret = dingding_key  # 可选：创建机器人勾选“加签”选项时使用
     # 初始化机器人小丁
     # xiaoding = DingtalkChatbot(webhook)  # 方式一：通常初始化方式
@@ -683,7 +705,6 @@ def dingtalk(message_list, mgml_list, ld_list):
     # 敏感数据
     new_list2 = []
     num2 = len(mgml_list)
-    print('111111111111')
     print(mgml_list)
     if int(num2) > 100:
         n2 = num2 // 50
@@ -742,7 +763,7 @@ def dingtalk(message_list, mgml_list, ld_list):
 
 def nuclei(filename):
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
-    #os.system('./inifile/lousao/nuclei -un -ut')
+    # os.system('./inifile/lousao/nuclei -un -ut')
     os.system('./inifile/lousao/nuclei -s low,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
     list1 = []
     list2 = []
@@ -786,7 +807,7 @@ def get_github_info(company_info_list, all_company_name_list):
                       "X-CSRFToken": ""}
             title = '(related_company==' + str(name) + '||url==' + str(name) + '||repository.description==' + str(
                 name) + '||code_detail==' + str(name) + ')'
-            data = 'page=' + str(page) + '&pagesize=30&title=' + str(title) + '&title_type=code'
+            data = 'page=' + str(page) + '&pagesize=20&title=' + str(title) + '&title_type=code'
             print(data)
             proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
             a = requests.post('https://0.zone/api/home/search/', data=data.encode('utf-8'), headers=header,
@@ -825,10 +846,11 @@ if __name__ == '__main__':
     parser.add_option('-l', '--list', action='store', dest="company_name_list")
     parser.add_option('-o', '--occ', action='store', default='100', dest="company_occ")
     parser.add_option('-d', '--domain', action='store', default='', dest="company_domains")
-    parser.add_option('-z', '--zs', action='store', default='', dest="zs_domains")
+    parser.add_option('-z', '--zs', action='store_true', dest="zs_domains")
     parser.add_option('-r', '--recursion', action='store', default='', dest="recursion_level")
-    parser.add_option('-m', '--ml', action='store', default='', dest="ml_sm")
-    parser.add_option('-n', '--nl', action='store', default='', dest="ld_sm")
+    parser.add_option('-m', '--ml', action='store_true', dest="ml_sm")
+    parser.add_option('-n', '--nl', action='store_true', dest="ld_sm")
+    parser.add_option('-a', '--av', action='store_true', dest="av_sm")
     options, args = parser.parse_args()
 
     # 加载配置文件
@@ -893,13 +915,16 @@ if __name__ == '__main__':
     global ld
     ld = options.ld_sm
 
+    global avsm
+    avsm = options.av_sm
+
     global zs_domains
     zs_domain = options.zs_domains
 
     global x_domain
     x_domain = options.x_domain
 
-    if str(zs_domain) != '1':
+    if zs_domain != True:
         company_id_name_list = Get_Company_Id(company_name, company_list)
         print(company_id_name_list)
         company_info_list, company_url_list = Get_ALL_Sub_Cmpany_Domain(company_id_name_list)
@@ -909,6 +934,11 @@ if __name__ == '__main__':
     # 调用fofa,yt获取信息
     get_all_url_fo_yt(company_info_list, company_domains_file)
     quchong_list, mgwj_list, ld_list = quchong_info_list(all_info_list)
+
+    # awvs扫描
+    if avsm == True:
+        print('开始调用awvs')
+        os.system('nohup python3 awvs_monitor.py >awvsput.out 2>&1 &')
     # github监控
     print(all_company_name_list)
     # github_list = get_github_info(company_info_list,all_company_name_list)
@@ -920,7 +950,7 @@ if __name__ == '__main__':
             dingtalk(quchong_list, mgwj_list, ld_list)
         except:
             print('发送消息异常')
-            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
+            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -a  -n  &')
 
     time.sleep(7200)
-    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z 1 -m 1 -n 1 &')
+    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -a  &')
