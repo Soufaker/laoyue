@@ -608,6 +608,11 @@ def quchong_info_list(all_info_list):
                 if 'http' in a:
                     print(a)
                     f.writelines(a + '\n')
+        # awvs
+        if avsm == True:
+            print('开始调用awvs')
+            os.system('nohup python3 awvs_monitor.py >awvsput.out 2>&1 &')
+
         if ml == True:
             mgwj_list = ml_sm(filename)
 
@@ -928,10 +933,6 @@ if __name__ == '__main__':
     get_all_url_fo_yt(company_info_list, company_domains_file)
     quchong_list, mgwj_list, ld_list = quchong_info_list(all_info_list)
 
-    # awvs扫描
-    if avsm == True:
-        print('开始调用awvs')
-        os.system('nohup python3 awvs_monitor.py >awvsput.out 2>&1 &')
     # github监控
     print(all_company_name_list)
     # github_list = get_github_info(company_info_list,all_company_name_list)
