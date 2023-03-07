@@ -14,8 +14,8 @@ from datetime import datetime
 import math
 from openpyxl import Workbook
 from configparser import ConfigParser
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+requests.packages.urllib3.disable_warnings()
 import urllib
 import os
 
@@ -32,7 +32,7 @@ def beianchaxun(url):
         'Accept-Language': 'zh-CN,zh;q=0.8',
     }
     try:
-        req = requests.get(url=URL, headers=headers,verify=False)
+        req = requests.get(url=URL, headers=headers)
         html = req.content
         titlere = r'<span class="ranking-ym" rel="nofollow">(.+?)</span>'
         title = re.findall(titlere, html.decode('utf-8'))
@@ -144,7 +144,7 @@ def get_all_page_id(id):
     }
     header['X-AUTH-TOKEN'] = x_auth_token
     try:
-        response = requests.post(url=company_url, headers=header, data=data,verify=False).text
+        response = requests.post(url=company_url, headers=header, data=data).text
         j = json.loads(response)
         print(j)
         for i in range(len(j['data']['result'])):
@@ -248,7 +248,7 @@ def Get_icp_Num(company_name):
     print(company_url)
     header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     try:
-        response = requests.get(url=company_url, headers=header,verify=False).text
+        response = requests.get(url=company_url, headers=header).text
         resp = response.replace(' ', '').replace('\n', '').replace('\t', '').replace("\"", "")
 
         flag = True
@@ -273,7 +273,7 @@ def yt_info(url):
     temp_url_list.append(url)
     while temp_url_list:
         temp_url_list.pop()
-        r = requests.get(url, timeout=30,verify=False)
+        r = requests.get(url, timeout=3)
         res = json.loads(r.text)
         if str(res['code']) == '429':
             temp_url_list.append(url)
@@ -329,47 +329,40 @@ def yt_info(url):
 def yt_get_info(name_list):
     try:
         for name in name_list:
-            try:
-                if name == '':
-                    continue
-                search_key = 'domain=' + name
-                keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
-                page = 1
-                api_num = 0
-                while True:
-                    # 测试第一个API积分是否够用
-                    url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=1&is_web=1".format(
-                        hunter_config_list[api_num], keyword.decode(), page)
-                    r = requests.get(url, timeout=30,verify=False)
-                    res = json.loads(r.text)
-
-                    if str(res['code']) == '429':
-                        continue
-                    if str(res['code']) == '401':
-                        if int(api_num) < int(len(hunter_config_list)):
-                            api_num += 1
-                        continue
-                    if str(res['code']) == '40204':
-                        if int(api_num) < int(len(hunter_config_list)):
-                            api_num += 1
-                            print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
-                            continue
-
-                    url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=20&is_web=1".format(
-                        hunter_config_list[api_num], keyword.decode(), page)
-                    print(url)
-                    try:
-                        pd_num = yt_info(url)
-                        if pd_num == 2:
-                            print('未查到数据')
-                        break
-                    except:
-                        continue
-            except:
+            if name == '':
                 continue
+            search_key = 'domain=' + name
+            keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
+            page = 1
+            api_num = 0
+            while True:
+                # 测试第一个API积分是否够用
+                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=1&is_web=1".format(
+                    hunter_config_list[api_num], keyword.decode(), page)
+                r = requests.get(url, timeout=30)
+                res = json.loads(r.text)
+
+                if str(res['code']) == '429':
+                    continue
+                if str(res['code']) == '401':
+                    if int(api_num) < int(len(hunter_config_list)):
+                        api_num += 1
+                    continue
+                if str(res['code']) == '40204':
+                    if int(api_num) < int(len(hunter_config_list)):
+                        api_num += 1
+                        print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
+                        continue
+
+                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=10&is_web=1".format(
+                    hunter_config_list[api_num], keyword.decode(), page)
+                print(url)
+                pd_num = yt_info(url)
+                if pd_num == 2:
+                    print('未查到数据')
+                break
     except Exception as e:
         print('出异常了', e)
-
 
 
 def get_title(url):
@@ -397,7 +390,7 @@ def get_fofa_url(domain_lsit):
             continue
         search_key = "domain=" + domain
         search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=20' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=10' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
         print(search)
         try:
             r = requests.get(search, verify=False)
@@ -438,7 +431,7 @@ def get_fofa_url(domain_lsit):
                 all_info_list.append(info)
         except:
             print('fofa连接超时,正在重试！')
-            time.sleep(1)
+            time.sleep(60)
             continue
 
 
@@ -615,10 +608,10 @@ def quchong_info_list(all_info_list):
                 if 'http' in a:
                     print(a)
                     f.writelines(a + '\n')
-        if str(ml) == True:
+        if ml == True:
             mgwj_list = ml_sm(filename)
 
-        if str(ld) == True:
+        if ld == True:
             ld_list = nuclei(filename)
 
     print('==============================')
@@ -807,7 +800,7 @@ def get_github_info(company_info_list, all_company_name_list):
                       "X-CSRFToken": ""}
             title = '(related_company==' + str(name) + '||url==' + str(name) + '||repository.description==' + str(
                 name) + '||code_detail==' + str(name) + ')'
-            data = 'page=' + str(page) + '&pagesize=20&title=' + str(title) + '&title_type=code'
+            data = 'page=' + str(page) + '&pagesize=10&title=' + str(title) + '&title_type=code'
             print(data)
             proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
             a = requests.post('https://0.zone/api/home/search/', data=data.encode('utf-8'), headers=header,
