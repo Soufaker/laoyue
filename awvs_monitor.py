@@ -54,7 +54,7 @@ def add_target(add_list1,description='AUTO'):
                 new_medium = new_medium_vul - temp_medium_vul
                 new_high = new_high_vul - temp_high_vul
                 new_sum = vul_sum - temp_sum
-                if new_sum > 20:
+                if new_sum > 30:
                     message_push = message_push + '亲爱的主人,本次新增加漏洞数量为:'+str(new_sum)+'\n'+'新增加高危数量:'+str(new_high)+'\n'+'新增加中危数量:'+str(new_medium)+'\n'+\
                                    '新增加低危数量:'+str(new_low)+'\n'+'--------------------------\n'+message_push_all
                     temp_sum = vul_sum
@@ -62,7 +62,23 @@ def add_target(add_list1,description='AUTO'):
                     temp_medium_vul = new_medium_vul
                     temp_low_vul = new_low_vul
                     print(message_push)
-                    push_wechat_group(message_push)
+                    message_length = int(len(message_push))
+                    print('消息长度',message_length)
+                    try:
+                        push_wechat_group(message_push)
+                    except:
+                        try:
+                            print('xxxxxxxxxxxxx12121')
+                            mid = int(len(message_push)) // 2
+                            push_wechat_group(message_push[0:mid])
+                            push_wechat_group(message_push[mid:])
+                        except:
+                            print('xxxxxxxxxxxxx12121')
+                            mid = int(len(message_push)) // 3
+                            push_wechat_group(message_push[0:mid])
+                            push_wechat_group(message_push[mid:mid+mid])
+                            push_wechat_group(message_push[mid+mid:])
+
                     #push_wechat_group(message_push_all)
 
             #状态检测看看有没有超出扫描限制
@@ -91,19 +107,18 @@ def add_target(add_list1,description='AUTO'):
 
 def push_wechat_group(content):
     global webhook_url
-    try:
-        # print('开始推送')
-        # 这里修改为自己机器人的webhook地址
-        resp = requests.post(webhook_url,
-                             json={"msgtype": "markdown",
-                                   "markdown": {"content": content}})
-        if 'invalid webhook url' in str(resp.text):
-            print('企业微信key 无效,无法正常推送')
-            sys.exit()
-        if resp.json()["errcode"] != 0:
-            raise ValueError("push wechat group failed, %s" % resp.text)
-    except Exception as e:
-        print('webhook',e)
+    # print('开始推送')
+    # 这里修改为自己机器人的webhook地址
+    resp = requests.post(webhook_url,
+                         json={"msgtype": "markdown",
+                               "markdown": {"content": content}})
+    if 'invalid webhook url' in str(resp.text):
+        print('企业微信key 无效,无法正常推送')
+        sys.exit()
+    if resp.json()["errcode"] != 0:
+        raise ValueError("push wechat group failed, %s" % resp.text)
+    # except Exception as e:
+    #     print('webhook',e)
 
 def first_push():
     init_high_count = 0
@@ -127,8 +142,7 @@ def first_push():
     print('漏洞总数:', vul_sum)
     message_push = '目前的全漏洞细节为'+'\n'
     for r in result['vulnerability_types']:
-
-        if int(r['severity']) > 0:
+        if int(r['severity']) > 0 and 'SSL' not in r['name'] and 'TLS' not in r['name'] and 'SPDY' not in r['name'] and 'CORS' not in r['name'] and 'Cookie' not in r['name']:
             if int(r['severity']) == 1:
                 level_vul = '低危'
 
@@ -136,9 +150,10 @@ def first_push():
                 level_vul = '中危'
             else:
                 level_vul = '高危'
-
-            message_push = message_push + '漏洞等級: ' + level_vul + '漏洞: ' + r['name'] + '数量: ' + str(
-                r['count']) + '\n'
+            if 'SSL' not in r['name'] and 'TLS' not in r['name']:
+                message_push = message_push + '漏洞等級: ' + level_vul + '漏洞: ' + r['name'] + '数量: ' + str(
+                    r['count']) + '\n'
+    print(message_push)
 
     return vul_sum,init_high_count,init_medium_count,init_low_count,result,message_push
 

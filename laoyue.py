@@ -486,7 +486,7 @@ def get_company_jt_info(name):
     # proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
 
     company_url = "https://capi.tianyancha.com/cloud-tempest/web/searchCompanyV3?_=1672969688987"
-    data = '{"word":"' + str(name) + '","sortType":"1","pageSize":1,"referer":"search","pageNum":1}'
+    data = '{"word":"' + str(name) + '","sortType":"0","pageSize":1,"referer":"search","pageNum":1}'
     print(data)
     header = {
         "host": "capi.tianyancha.com",
