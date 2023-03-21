@@ -472,7 +472,7 @@ def get_all_url_fo_yt(company_info_list, company_domains_file):
         for a in all_qc_domain_list:
             f.writelines(a + '\n')
     print(all_qc_domain_list)
-    if x_domain != '1':
+    if x_domain != True:
         # 调用鹰图,并添加到所有搜集的列表
         print('开始调用鹰图')
         yt_get_info(all_qc_domain_list)
@@ -628,7 +628,7 @@ def quchong_info_list(all_info_list):
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
     os.system('python3 ./inifile/dirsearch-master/dirsearch.py  -r 3 -l' + str(
-        filename) + ' -w ./inifile/dict/file_top_200.txt -o ' + str(dir_file))
+        filename) + ' -w ./inifile/dict/file_top_200.txt  --timeout 1 -o ' + str(dir_file))
     list1 = []
     list2 = []
     try:
