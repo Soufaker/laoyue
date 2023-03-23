@@ -242,7 +242,6 @@ def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list):
 
     wb.save("./result/baolumian/暴露面收集" + t + ".xlsx")
 
-
 def Get_icp_Num(company_name):
     company_url = "https://beian.tianyancha.com/search/" + company_name
     print(company_url)
@@ -354,7 +353,7 @@ def yt_get_info(name_list):
                         print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
                         continue
 
-                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=10&is_web=1".format(
+                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=50&is_web=1".format(
                     hunter_config_list[api_num], keyword.decode(), page)
                 print(url)
                 pd_num = yt_info(url)
@@ -381,6 +380,8 @@ def isCDN(domain, ip):  # 判断目标是否存在CDN
     if result.count(".") > 8:  # nslookup [ip]的返回结果中，多于8个.代表返回多于1一个ip，即存在cdn
         return "存在CDN" + str(ip)
     else:
+        if ip not in ip_list:
+            ip_list.append(ip)
         return ip
 
 
@@ -390,7 +391,7 @@ def get_fofa_url(domain_lsit):
             continue
         search_key = "domain=" + domain
         search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=10' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=100' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
         print(search)
         try:
             r = requests.get(search, verify=False)
@@ -472,7 +473,7 @@ def get_all_url_fo_yt(company_info_list, company_domains_file):
         for a in all_qc_domain_list:
             f.writelines(a + '\n')
     print(all_qc_domain_list)
-    if x_domain != True:
+    if x_domain != '1':
         # 调用鹰图,并添加到所有搜集的列表
         print('开始调用鹰图')
         yt_get_info(all_qc_domain_list)
@@ -486,7 +487,7 @@ def get_company_jt_info(name):
     # proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
 
     company_url = "https://capi.tianyancha.com/cloud-tempest/web/searchCompanyV3?_=1672969688987"
-    data = '{"word":"' + str(name) + '","sortType":"0","pageSize":1,"referer":"search","pageNum":1}'
+    data = '{"word":"' + str(name) + '","sortType":"1","pageSize":1,"referer":"search","pageNum":1}'
     print(data)
     header = {
         "host": "capi.tianyancha.com",
@@ -584,6 +585,41 @@ def save_cache(target_list):
         return target_list
 
 
+def httpx_naabu_scan(filename):
+    file_lis2t = open(filename, 'r', encoding='utf-8').read().split('\n')
+    print('-------------')
+    print(file_lis2t)
+    filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'temp_port.txt'
+    filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
+                                                              time.localtime()) + 'all_url_list.txt'
+    port_scan = './inifile/naabu/naabu  -l ' + filename + ' -p 80,443,8080,2053,2087,2096,8443,2083,2086,2095,8880,2052,2082,3443,8791,8887,8888,444,9443,2443,10000,10001,8082,8444,20000,8081,8445,8446,8447  -o ' + filename_temp
+    print('2 ' + port_scan)
+    os.system(port_scan)  # &> /dev/null
+    http_scan = './inifile/httpx/httpx  -l ' + filename_temp + ' -fl 0 -mc 200,302,403,404,204,303,400,401 -o ' + filename_filter_name  # &> /dev/null'
+    print('1 ' + http_scan)
+    os.system(http_scan)  # &> /dev/null
+    #os.system('rm -rf ' + filename)
+    #os.system('rm -rf ' + filename_temp)
+    print('filename_filter_name', filename_filter_name)
+
+    # 写入awvs文件
+    file_list = open(filename_filter_name, 'r', encoding='utf-8').read().split('\n')
+
+    # awvs
+    if avsm == True:
+        print('开始调用awvs')
+        os.system('nohup python3 awvs_monitor.py >awvsput.out 2>&1 &')
+
+    awvs_file_name = './result/awvslist/all_av_list.txt'
+    with open(awvs_file_name, 'a', encoding='utf-8') as f:
+        for a in file_list:
+            if 'http' in a:
+                print(a)
+                f.writelines(a + '\n')
+
+    return filename_filter_name
+
+
 def quchong_info_list(all_info_list):
     new_list = []
     new_list2 = []
@@ -598,26 +634,19 @@ def quchong_info_list(all_info_list):
     print(new_list2)
     if len(new_list2) != 0:
         filename = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'all_url_list.txt'
-        filename2 = './result/awvslist/all_av_list.txt'
         with open(filename, 'w', encoding='utf-8') as f:
             for a in new_list2:
-                print(a)
-                f.writelines(a + '\n')
-        with open(filename2, 'a', encoding='utf-8') as f:
-            for a in new_list2:
-                if 'http' in a:
-                    print(a)
-                    f.writelines(a + '\n')
-        # awvs
-        if avsm == True:
-            print('开始调用awvs')
-            os.system('nohup python3 awvs_monitor.py >awvsput.out 2>&1 &')
+                print('1' + a)
+                a1 = a.replace('https://', '').replace('http://', '')
+                print(a1)
+                f.writelines(a1 + '\n')
 
+        file_filter_name = httpx_naabu_scan(filename)
         if ml == True:
-            mgwj_list = ml_sm(filename)
+            mgwj_list = ml_sm(file_filter_name)
 
         if ld == True:
-            ld_list = nuclei(filename)
+            ld_list = nuclei(file_filter_name)
 
     print('==============================')
     # print(mgwj_list)
@@ -628,7 +657,7 @@ def quchong_info_list(all_info_list):
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
     os.system('python3 ./inifile/dirsearch-master/dirsearch.py  -r 3 -l' + str(
-        filename) + ' -w ./inifile/dict/file_top_200.txt  --timeout 1 -o ' + str(dir_file))
+        filename) + ' -w ./inifile/dict/file_top_200.txt -o ' + str(dir_file))
     list1 = []
     list2 = []
     try:
@@ -896,6 +925,8 @@ if __name__ == '__main__':
     quchong_list = []
     mgwj_list = []
     ld_list = []
+    global ip_list
+    ip_list = []
 
     # 参数获取
     global company_occ
@@ -944,7 +975,7 @@ if __name__ == '__main__':
             dingtalk(quchong_list, mgwj_list, ld_list)
         except:
             print('发送消息异常')
-            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -a  -n  &')
+            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  &')
 
     time.sleep(7200)
-    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -a  &')
+    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  &')
