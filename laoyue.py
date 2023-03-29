@@ -1,6 +1,6 @@
 # author:Soufaker
 # time:2023/01/14
-
+import random
 import requests
 import time
 import optparse
@@ -330,7 +330,7 @@ def yt_get_info(name_list):
         for name in name_list:
             if name == '':
                 continue
-            search_key = 'domain=' + name
+            search_key = '(domain=' + name +')'+str(yt_keword)
             keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
             page = 1
             api_num = 0
@@ -353,8 +353,8 @@ def yt_get_info(name_list):
                         print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
                         continue
 
-                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=50&is_web=1".format(
-                    hunter_config_list[api_num], keyword.decode(), page)
+                url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size={}&is_web=1".format(
+                    hunter_config_list[api_num], keyword.decode(), page,yt_size)
                 print(url)
                 pd_num = yt_info(url)
                 if pd_num == 2:
@@ -366,7 +366,7 @@ def yt_get_info(name_list):
 
 def get_title(url):
     try:
-        page = urllib.request.urlopen(url=url, timeout=60)
+        page = urllib.request.urlopen(url=url, timeout=0.5)
         html = page.read().decode('utf-8')
         title = re.findall('<title>(.+)</title>', html)
         return title[0]
@@ -384,56 +384,79 @@ def isCDN(domain, ip):  # 判断目标是否存在CDN
             ip_list.append(ip)
         return ip
 
+def fy_list(list1,count):
+    new_list = []
+    num = len(list1)
+    print(list1)
+    if int(num) > int(count):
+        n = num // int(count)
+    else:
+        n = 1
 
-def get_fofa_url(domain_lsit):
-    for domain in domain_lsit:
-        if domain == '':
-            continue
-        search_key = "domain=" + domain
-        search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-        search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=100' + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
-        print(search)
-        try:
-            r = requests.get(search, verify=False)
-            res = json.loads(r.text)
-            size = len(res['results'])
-            for i in range(0, int(size)):
-                info = []
-                result = res['results'][i]
-                num = len(result)
-                temp = ''
-                for j in range(0, int(num) - 1):
-                    if j == 1:
-                        ip = isCDN(result[9], result[1])
-                        result[1] = ip
-                    if j == 0:
-                        if 'http' not in result[0][0:5]:
-                            result[0] = result[4] + '://' + result[0]
-                    if j == 6:
-                        temp = result[j]
-                        continue
-                    if j == 7:
-                        result[j] = '|' + result[j] + '|' + temp
-                    if j == 8:
-                        if result[j] == '':
-                            result[j] = '-'
-                    if j == 5:
-                        if result[j] == '':
-                            result[j] == '-'
-                    if j == 3:
-                        result[j] = get_title(result[0])
-                        if result[j] == '':
-                            result[j] = '-'
+    for i in range(0,n):
+        one_list = list1[math.floor(i / n * num):math.floor((i + 1) / n * num)]
+        new_list.append(one_list)
+    return new_list
 
-                    if j == 5:
-                        result[j] = result[j][9:12]
-                    info.append(result[j])
-                # print(info)
-                all_info_list.append(info)
-        except:
-            print('fofa连接超时,正在重试！')
-            time.sleep(60)
-            continue
+def get_fofa_url(domain_l):
+    new_list = fy_list(domain_l,fofa_count)
+    print(new_list)
+    while True:
+        for domain_list in new_list:
+            try:
+                domain_all = ''
+                for domain in domain_list:
+                    if domain != '':
+                        domain_all = domain_all + "domain=" + domain + '||'
+                search_key = '('+domain_all[0:-2]+')'+ str(fofa_keyword)
+                search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
+                search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size='+ fofa_size + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+                print(search)
+                try:
+                    r = requests.get(search, verify=False)
+                    res = json.loads(r.text)
+                    size = len(res['results'])
+                    for i in range(0, int(size)):
+                        info = []
+                        result = res['results'][i]
+                        num = len(result)
+                        temp = ''
+                        for j in range(0, int(num) - 1):
+                            if j == 1:
+                                ip = isCDN(result[9], result[1])
+                                result[1] = ip
+                            if j == 0:
+                                if 'http' not in result[0][0:5]:
+                                    result[0] = result[4] + '://' + result[0]
+                            if j == 6:
+                                temp = result[j]
+                                continue
+                            if j == 7:
+                                result[j] = '|' + result[j] + '|' + temp
+                            if j == 8:
+                                if result[j] == '':
+                                    result[j] = '-'
+                            if j == 5:
+                                if result[j] == '':
+                                    result[j] == '-'
+                            if j == 3:
+                                result[j] = get_title(result[0])
+                                if result[j] == '':
+                                    result[j] = '-'
+
+                            if j == 5:
+                                result[j] = result[j][9:12]
+                            info.append(result[j])
+                        print(info)
+                        all_info_list.append(info)
+                except:
+                    continue
+            except:
+                print('fofa连接超时,正在重试！')
+                time.sleep(1)
+                continue
+        print('查询结束了')
+        break
 
 
 def split_list_average_n(origin_list, n):
@@ -487,7 +510,7 @@ def get_company_jt_info(name):
     # proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
 
     company_url = "https://capi.tianyancha.com/cloud-tempest/web/searchCompanyV3?_=1672969688987"
-    data = '{"word":"' + str(name) + '","sortType":"0","pageSize":1,"referer":"search","pageNum":1}'
+    data = '{"word":"' + str(name) + '","sortType":"1","pageSize":1,"referer":"search","pageNum":1}'
     print(data)
     header = {
         "host": "capi.tianyancha.com",
@@ -897,10 +920,26 @@ if __name__ == '__main__':
     dingding_hook = ''
     global x_auth_token
     x_auth_token = ''
+    global fofa_size
+    fofa_size = ''
+    global fofa_keyword
+    fofa_keyword = ''
+    global yt_size
+    yt_size = ''
+    global yt_keword
+    yt_keword = ''
+    global fofa_count
+    fofa_count = ''
 
     c_len = cf.options('hunter')
     for i in c_len:
         hunter_config_list.append(cf.get('hunter', i))
+    yt_keword = ''
+    fofa_count = cf.get('fofa', 'count')
+    fofa_size = cf.get('fofa', 'size')
+    yt_size = cf.get('hunter', 'size')
+    fofa_keyword = cf.get('fofa', 'keyword')
+    yt_keword = cf.get('hunter', 'keyword')
     fofa_key = cf.get('fofa', 'fofa_key')
     fofa_email = cf.get('fofa', 'fofa_email')
     dingding_hook = cf.get('dingding', 'access_token')
@@ -975,7 +1014,7 @@ if __name__ == '__main__':
             dingtalk(quchong_list, mgwj_list, ld_list)
         except:
             print('发送消息异常')
-            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  &')
+            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -a  &> /dev/null &')
 
-    time.sleep(7200)
-    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  &')
+    time.sleep(360)
+    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  -a  &> /dev/null &')
