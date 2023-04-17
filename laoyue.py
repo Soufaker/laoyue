@@ -1,5 +1,5 @@
 # author:Soufaker
-# time:2023/01/14
+# time:2023/04/14
 import random
 import requests
 import time
@@ -555,67 +555,41 @@ def get_company_jt_info(name):
 
 
 def save_cache(target_list):
-    add_list = []
-    add_list2 = []
-    temp_list = []
-    file_list = []
-    with open('./caches/cache.txt', 'r', encoding='utf-8') as f:
-        while True:
-            line = f.readline()
-            if line:
-                file_list.append(line.strip('\n'))
-            else:
-                break
-        f.close()
-    if len(file_list) != 0:
-        for f in file_list:
-            if f == '':
-                continue
-            try:
-                temp_list.append(f.split('|')[1].strip())
-            except:
-                continue
+    yt_fofa_add_list = []
+    yt_fofa_add_list2 = []
+    sm_add_list = []
+    #读取历史扫描信息
+    sm_cache_file_list = open('./caches/sm_cache.txt', 'r', encoding='utf-8').read().split('\n')
 
+    # 添加fafa_yt记录的历史域名信息
+    if len(target_list) != 0:
         for tar in target_list:
-            print(tar[0])
-            if tar[0] not in temp_list:
-                print(tar[0])
+            if tar[0] not in sm_cache_file_list:
+                sm_add_list.append(tar[0])
                 str_tar = ''
                 for t in tar:
                     str_tar = str_tar + ' | ' + str(t)
-                add_list.append(str_tar)
-                add_list2.append(tar)
-                for l in add_list:
-                    caches_file = open('./caches/cache.txt', 'a', encoding='utf-8')
-                    caches_file.write(l + '\n')
-                    caches_file.close()
+                yt_fofa_add_list.append(str_tar)
+                yt_fofa_add_list2.append(tar)
 
-        print('增加的资产')
-        print(add_list)
-        return add_list2
-    else:
-        for tar in target_list:
-            str_tar = ''
-            for t in tar:
-                str_tar = str_tar + ' | ' + str(t)
-            add_list.append(str_tar)
-        for l in add_list:
-            caches_file = open('./caches/cache.txt', 'a', encoding='utf-8')
-            caches_file.write(l + '\n')
-            caches_file.close()
-        print('增加的资产')
-        print(add_list)
-        return target_list
+    for l in yt_fofa_add_list:
+        caches_file = open('./caches/fo_yt_cache.txt', 'a', encoding='utf-8')
+        caches_file.write(l + '\n')
+        caches_file.close()
+
+
+
+    return sm_add_list,yt_fofa_add_list2
 
 
 def httpx_naabu_scan(filename):
-    file_lis2t = open(filename, 'r', encoding='utf-8').read().split('\n')
+    file_list2 = open(filename, 'r', encoding='utf-8').read().split('\n')
     print('-------------')
-    print(file_lis2t)
+    print(file_list2)
     filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'temp_port.txt'
     filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
                                                               time.localtime()) + 'all_url_list.txt'
-    port_scan = './inifile/naabu/naabu  -l ' + filename + ' -p 80,443,8080,2053,2087,2096,8443,2083,2086,2095,8880,2052,2082,3443,8791,8887,8888,444,9443,2443,10000,10001,8082,8444,20000,8081,8445,8446,8447  -o ' + filename_temp
+    port_scan = './inifile/naabu/naabu  -l ' + filename + ' -top-ports 1000 -o ' + filename_temp
     print('2 ' + port_scan)
     os.system(port_scan)  # &> /dev/null
     http_scan = './inifile/httpx/httpx  -l ' + filename_temp + ' -fl 0 -mc 200,302,403,404,204,303,400,401 -o ' + filename_filter_name  # &> /dev/null'
@@ -627,7 +601,10 @@ def httpx_naabu_scan(filename):
 
     # 写入awvs文件
     file_list = open(filename_filter_name, 'r', encoding='utf-8').read().split('\n')
-
+    for l in file_list:
+        caches_file = open('./caches/sm_cache.txt', 'a', encoding='utf-8')
+        caches_file.write(l + '\n')
+        caches_file.close()
     # awvs
     if avsm == True:
         print('开始调用awvs')
@@ -645,20 +622,16 @@ def httpx_naabu_scan(filename):
 
 def quchong_info_list(all_info_list):
     new_list = []
-    new_list2 = []
     mgwj_list = []
     ld_list = []
     for all in all_info_list:
         if all not in new_list:
             new_list.append(all)
-    add_list = save_cache(new_list)
-    for a in add_list:
-        new_list2.append(a[0])
-    print(new_list2)
-    if len(new_list2) != 0:
+    add_list,yt_fofa_info_list = save_cache(new_list)
+    if len(add_list) != 0:
         filename = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'all_url_list.txt'
         with open(filename, 'w', encoding='utf-8') as f:
-            for a in new_list2:
+            for a in add_list:
                 print('1' + a)
                 a1 = a.replace('https://', '').replace('http://', '')
                 print(a1)
@@ -674,7 +647,10 @@ def quchong_info_list(all_info_list):
     print('==============================')
     # print(mgwj_list)
     # print(ld_list)
-    return add_list, mgwj_list, ld_list
+    print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    print(yt_fofa_info_list)
+    print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
+    return yt_fofa_info_list, mgwj_list, ld_list
 
 
 def ml_sm(filename):
