@@ -165,7 +165,7 @@ def get_all_page_id(id):
     return id_list
 
 
-def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list,httpx_info):
+def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list, httpx_info):
     t = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     wb = Workbook()
     ws1 = wb.create_sheet('天眼查基本信息', 0)
@@ -253,6 +253,7 @@ def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list,httpx_in
         ws6.append(l)
 
     wb.save("./result/baolumian/暴露面收集" + t + ".xlsx")
+
 
 def Get_icp_Num(company_name):
     company_url = "https://beian.tianyancha.com/search/" + company_name
@@ -342,7 +343,7 @@ def yt_get_info(name_list):
         for name in name_list:
             if name == '':
                 continue
-            search_key = '(domain=' + name +')'+str(yt_keword)
+            search_key = '(domain=' + name + ')' + str(yt_keword)
             keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
             page = 1
             api_num = 0
@@ -366,7 +367,7 @@ def yt_get_info(name_list):
                         continue
 
                 url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size={}&is_web=1".format(
-                    hunter_config_list[api_num], keyword.decode(), page,yt_size)
+                    hunter_config_list[api_num], keyword.decode(), page, yt_size)
                 print(url)
                 pd_num = yt_info(url)
                 if pd_num == 2:
@@ -396,7 +397,8 @@ def isCDN(domain, ip):  # 判断目标是否存在CDN
             ip_list.append(ip)
         return ip
 
-def fy_list(list1,count):
+
+def fy_list(list1, count):
     new_list = []
     num = len(list1)
     print(list1)
@@ -405,13 +407,14 @@ def fy_list(list1,count):
     else:
         n = 1
 
-    for i in range(0,n):
+    for i in range(0, n):
         one_list = list1[math.floor(i / n * num):math.floor((i + 1) / n * num)]
         new_list.append(one_list)
     return new_list
 
+
 def get_fofa_url(domain_l):
-    new_list = fy_list(domain_l,fofa_count)
+    new_list = fy_list(domain_l, fofa_count)
     print(new_list)
     while True:
         for domain_list in new_list:
@@ -420,9 +423,9 @@ def get_fofa_url(domain_l):
                 for domain in domain_list:
                     if domain != '':
                         domain_all = domain_all + "domain=" + domain + '||'
-                search_key = '('+domain_all[0:-2]+')'+ str(fofa_keyword)
+                search_key = '(' + domain_all[0:-2] + ')' + str(fofa_keyword)
                 search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-                search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size='+ fofa_size + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+                search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=' + fofa_size + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
                 print(search)
                 try:
                     r = requests.get(search, verify=False)
@@ -572,10 +575,10 @@ def save_cache(target_list):
     yt_fofa_add_list = []
     yt_fofa_add_list2 = []
     sm_add_list = []
-    #读取历史扫描信息
+    # 读取历史扫描信息
     sm_cache_file_list = open('./caches/sm_cache.txt', 'r', encoding='utf-8').read().split('\n')
-    print('target',target_list)
-    print('sm',sm_cache_file_list)
+    print('target', target_list)
+    print('sm', sm_cache_file_list)
     # 添加fafa_yt记录的历史域名信息
     if len(target_list) != 0:
         for tar in target_list:
@@ -601,12 +604,10 @@ def save_cache(target_list):
         caches_file.write(l + '\n')
         caches_file.close()
 
+    return sm_add_list, yt_fofa_add_list2, sm_cache_file_list
 
 
-    return sm_add_list,yt_fofa_add_list2,sm_cache_file_list
-
-
-def httpx_naabu_scan(filename,sm_cache_file_list):
+def httpx_naabu_scan(filename, sm_cache_file_list):
     caches_file_list = open('./caches/sm_cache.txt', 'a', encoding='utf-8')
     caches_file = open('./caches/sm_cache.txt', 'a', encoding='utf-8')
     try:
@@ -614,25 +615,26 @@ def httpx_naabu_scan(filename,sm_cache_file_list):
         print('-------------')
         print(file_list2)
         filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'temp_port.txt'
-        filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()) + 'all_url_list.txt'
+        filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
+                                                                  time.localtime()) + 'all_url_list.txt'
         port_scan = './inifile/naabu/naabu  -l ' + filename + ' -top-ports 1000 -o ' + filename_temp
         print('2 ' + port_scan)
         os.system(port_scan)  # &> /dev/null
-        httpx_filename = filename_temp[0:-4]+'_httpx.txt'
+        httpx_filename = filename_temp[0:-4] + '_httpx.txt'
         http_list = open(filename_temp, 'r', encoding='utf-8')
-        with open(httpx_filename,'w+') as f:
+        with open(httpx_filename, 'w+') as f:
             for h in http_list:
                 print(h)
-                f.writelines('https://'+ h )
-                f.writelines('http://'+ h )
+                f.writelines('https://' + h)
+                f.writelines('http://' + h)
         http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -fl 0 -mc 200,401,403,404,302,301  -title  -tech-detect -status-code -timeout 5 -threads 30  -o  ' + filename_filter_name  # &> /dev/null'
         print('1 ' + http_scan)
         os.system(http_scan)  # &> /dev/null
-        #os.system('rm -rf ' + filename)
-        #os.system('rm -rf ' + filename_temp)
+        # os.system('rm -rf ' + filename)
+        # os.system('rm -rf ' + filename_temp)
         httpx_info_list = open(filename_filter_name, 'r', encoding='utf-8').read().split('\n')
         for i in httpx_info_list:
-            if i not in caches_file_list and i !='':
+            if i not in caches_file_list and i != '':
                 info = []
                 f = i.split(' ')
                 info.append(f[0])
@@ -659,7 +661,7 @@ def httpx_naabu_scan(filename,sm_cache_file_list):
             else:
                 if l not in sm_cache_file_list:
                     print('0000000000000000000000')
-                    caches_file.write(l+'\n')
+                    caches_file.write(l + '\n')
 
         caches_file.close()
         # awvs
@@ -688,10 +690,11 @@ def httpx_naabu_scan(filename,sm_cache_file_list):
                 else:
                     if l not in sm_cache_file_list:
                         print('0000000000000000000000')
-                        caches_file.write(l+'\n')
+                        caches_file.write(l + '\n')
                         caches_file_list_1.write(l + '\n')
 
         return filename_filter_name
+
 
 def scan_awvs(file_list):
     if avsm == True:
@@ -704,6 +707,7 @@ def scan_awvs(file_list):
                 print(a)
                 f.writelines(a + '\n')
 
+
 def quchong_info_list(all_info_list):
     new_list = []
     mgwj_list = []
@@ -711,7 +715,7 @@ def quchong_info_list(all_info_list):
     for all in all_info_list:
         if all not in new_list:
             new_list.append(all)
-    add_list,yt_fofa_info_list,sm_cache_file_list = save_cache(new_list)
+    add_list, yt_fofa_info_list, sm_cache_file_list = save_cache(new_list)
     add_list = list(set(add_list))
     if len(add_list) != 0:
         filename = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'all_url_list.txt'
@@ -722,7 +726,7 @@ def quchong_info_list(all_info_list):
                 print(a1)
                 f.writelines(a1 + '\n')
 
-        file_filter_name = httpx_naabu_scan(filename,sm_cache_file_list)
+        file_filter_name = httpx_naabu_scan(filename, sm_cache_file_list)
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
 
@@ -859,7 +863,7 @@ def dingtalk(message_list, mgml_list, ld_list):
             xuhao = 1
             num1 = len(i)
             title = '新收集暴露面信息 ' + str(
-                num1) + ' 个' + '\n' + '-----------------------------------------------' + '\n' + '网址         ' + '        标题       ' + '     状态码      ' + 'ip      '
+                num1) + ' 个' + '\n' + '-----------------------------------------------' + '\n' + '网址           ' + '    状态码    ' + '     标题      '
             message = ''
             for msg in i:
                 info = str(msg[0]) + '   ' + str(msg[2]) + '   ' + str(msg[1]) + '   '
@@ -992,10 +996,9 @@ if __name__ == '__main__':
     global fofa_count
     fofa_count = ''
     global file_filter_name
-    file_filter_name =''
+    file_filter_name = ''
     global httpx_info
     httpx_info = []
-
 
     c_len = cf.options('hunter')
     for i in c_len:
@@ -1069,8 +1072,6 @@ if __name__ == '__main__':
     get_all_url_fo_yt(company_info_list, company_domains_file)
     quchong_list, mgwj_list, ld_list = quchong_info_list(all_info_list)
 
-
-
     # github监控
     print(all_company_name_list)
     # github_list = get_github_info(company_info_list,all_company_name_list)
@@ -1083,7 +1084,6 @@ if __name__ == '__main__':
         except:
             print('发送消息异常')
             os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n > /dev/null &')
-            
+
     time.sleep(360)
     os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  > /dev/null &')
-    
