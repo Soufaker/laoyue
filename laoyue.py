@@ -590,7 +590,7 @@ def save_cache(target_list):
                     info.append(tar[3])
                     info.append(tar[5])
                     httpx_info.append(info)
-                    continue
+                    
 
                 sm_add_list.append(tar[0])
                 str_tar = ''
