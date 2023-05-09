@@ -590,7 +590,6 @@ def save_cache(target_list):
                     info.append(tar[3])
                     info.append(tar[5])
                     httpx_info.append(info)
-                    
 
                 sm_add_list.append(tar[0])
                 str_tar = ''
@@ -1080,7 +1079,8 @@ if __name__ == '__main__':
         Write_To_Excel(company_info_list, quchong_list, mgwj_list, ld_list, httpx_info)
         # 发送信息
         try:
-            dingtalk(httpx_info, mgwj_list, ld_list)
+            set_info = list(set(httpx_info))
+            dingtalk(set_info, mgwj_list, ld_list)
         except:
             print('发送消息异常')
             os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n > /dev/null &')
