@@ -584,7 +584,7 @@ def save_cache(target_list):
         for tar in target_list:
             print(tar[0])
             if tar[0] not in sm_cache_file_list:
-                if str(tar[5]) == '200' or str(tar[5]) == '301' or str(tar[5]) == '302' or str(tar[5]) == '201':
+                if str(tar[5]) == '200' or str(tar[5]) == '301' or str(tar[5]) == '302' or str(tar[5]) == '201' or str(tar[5]) == '404' or str(tar[5]) == '401' or str(tar[5]) == '405':
                     info = []
                     info.append(tar[0])
                     info.append(tar[3])
@@ -951,6 +951,18 @@ def get_github_info(company_info_list, all_company_name_list):
 
     return info_list
 
+def quchong(l1):
+    temp_list = []
+    l = []
+    for i in l1:
+        temp_list.append(','.join(i))
+    print(temp_list)
+    l2 = list(set(temp_list))
+    print(l2)
+    for x in l2:
+        l.append(x.split(','))
+
+    return l
 
 if __name__ == '__main__':
     # 参数设置
@@ -1079,7 +1091,7 @@ if __name__ == '__main__':
         Write_To_Excel(company_info_list, quchong_list, mgwj_list, ld_list, httpx_info)
         # 发送信息
         try:
-            set_info = list(set(httpx_info))
+            set_info = quchong(httpx_info)
             dingtalk(set_info, mgwj_list, ld_list)
         except:
             print('发送消息异常')
