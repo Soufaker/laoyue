@@ -586,9 +586,9 @@ def save_cache(target_list):
             if tar[0] not in sm_cache_file_list:
                 if str(tar[5]) == '200' or str(tar[5]) == '301' or str(tar[5]) == '302' or str(tar[5]) == '201' or str(tar[5]) == '404' or str(tar[5]) == '401' or str(tar[5]) == '405':
                     info = []
-                    info.append(tar[0])
-                    info.append(tar[3])
-                    info.append(tar[5])
+                    info.append(str(tar[0]))
+                    info.append(str(tar[3]))
+                    info.append(str(tar[5]))
                     httpx_info.append(info)
 
                 sm_add_list.append(tar[0])
@@ -636,9 +636,9 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
             if i not in caches_file_list and i != '':
                 info = []
                 f = i.split(' ')
-                info.append(f[0])
-                info.append(f[1].split('\x1b')[1].split('m')[1])
-                info.append(f[2].split('\x1b')[1][4:])
+                info.append(str(f[0]))
+                info.append(str(f[1].split('\x1b')[1].split('m')[1]))
+                info.append(str(f[2].split('\x1b')[1][4:]))
                 httpx_info.append(info)
         print(httpx_info)
         print('filename_filter_name', filename_filter_name)
@@ -955,7 +955,11 @@ def quchong(l1):
     temp_list = []
     l = []
     for i in l1:
-        temp_list.append(','.join(i))
+        try:
+            temp_list.append(','.join(i))
+        except:
+            print('jon')
+            continue
     print(temp_list)
     l2 = list(set(temp_list))
     print(l2)
