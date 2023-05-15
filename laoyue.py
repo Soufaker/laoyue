@@ -343,7 +343,7 @@ def yt_get_info(name_list):
         for name in name_list:
             if name == '':
                 continue
-            search_key = '(ip=' + name + ')' + str(yt_keword)
+            search_key = '(domain=' + name + ')' + str(yt_keword)
             keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
             page = 1
             api_num = 0
@@ -422,7 +422,7 @@ def get_fofa_url(domain_l):
                 domain_all = ''
                 for domain in domain_list:
                     if domain != '':
-                        domain_all = domain_all + "ip=" + domain + '||'
+                        domain_all = domain_all + "domain=" + domain + '||'
                 search_key = '(' + domain_all[0:-2] + ')' + str(fofa_keyword)
                 search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
                 search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=' + fofa_size + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
