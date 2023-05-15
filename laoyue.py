@@ -343,7 +343,7 @@ def yt_get_info(name_list):
         for name in name_list:
             if name == '':
                 continue
-            search_key = '(domain=' + name + ')' + str(yt_keword)
+            search_key = '(ip=' + name + ')' + str(yt_keword)
             keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
             page = 1
             api_num = 0
@@ -422,7 +422,7 @@ def get_fofa_url(domain_l):
                 domain_all = ''
                 for domain in domain_list:
                     if domain != '':
-                        domain_all = domain_all + "domain=" + domain + '||'
+                        domain_all = domain_all + "ip=" + domain + '||'
                 search_key = '(' + domain_all[0:-2] + ')' + str(fofa_keyword)
                 search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
                 search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=' + fofa_size + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
@@ -614,9 +614,22 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         print('-------------')
         print(file_list2)
         filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'temp_port.txt'
+        temp_l = open(filename, 'r', encoding='utf-8').read().split('\n')
+        print(temp_l)
+        new_filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()) + 'new_temp_port.txt'
+        with open(new_filename_temp, 'w') as f:
+            for i in temp_l:
+                if ':' in i:
+                    print('123')
+                    print(i.split(':')[0])
+                    f.writelines(i.split(':')[0] + '\n')
+                else:
+                    f.writelines(i)
+
         filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
                                                                   time.localtime()) + 'all_url_list.txt'
-        port_scan = './inifile/naabu/naabu  -l ' + filename + ' -top-ports 1000 -o ' + filename_temp
+
+        port_scan = './inifile/naabu/naabu  -l ' + new_filename_temp + ' -top-ports 1000 -o ' + filename_temp
         print('2 ' + port_scan)
         os.system(port_scan)  # &> /dev/null
         httpx_filename = filename_temp[0:-4] + '_httpx.txt'
@@ -626,7 +639,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                 print(h)
                 f.writelines('https://' + h)
                 f.writelines('http://' + h)
-        http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -fl 0 -mc 200,401,403,404,302,301  -title  -tech-detect -status-code -timeout 5 -threads 30  -o  ' + filename_filter_name  # &> /dev/null'
+        http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -mc 200,401,403,404,302,301  -title  -tech-detect -status-code -timeout 5 -threads 30  -o  ' + filename_filter_name  # &> /dev/null'
         print('1 ' + http_scan)
         os.system(http_scan)  # &> /dev/null
         # os.system('rm -rf ' + filename)
@@ -752,7 +765,7 @@ def ml_sm(filename):
             print(dir_file)
             test1 = f.readlines()
             for t in test1:
-                if t[0] != '#' and t[0] != '\n':
+                if t[0] != '#' and t[0] != '\n' and '3KB' not in t and '3B' not in t:
                     list1.append(t.strip('\n'))
     except:
         print('该地址无敏感目录')
@@ -878,7 +891,7 @@ def dingtalk(message_list, mgml_list, ld_list):
 def nuclei(filename):
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
     # os.system('./inifile/lousao/nuclei -un -ut')
-    os.system('./inifile/lousao/nuclei -s low,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
+    os.system('./inifile/lousao/nuclei -s low,medium,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
     list1 = []
     list2 = []
     try:
@@ -1099,7 +1112,7 @@ if __name__ == '__main__':
             dingtalk(set_info, mgwj_list, ld_list)
         except:
             print('发送消息异常')
-            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n > /dev/null &')
+            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -m &')
 
     time.sleep(360)
-    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  > /dev/null &')
+    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  -m &')
