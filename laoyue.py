@@ -820,6 +820,8 @@ def dingtalk(message_list, mgml_list, ld_list):
                 num3) + ' 个' + '\n' + '-----------------------------------------------'
 
             for msg in i:
+                if 'ssl' in msg[0] and 'tls' in msg[0] and '-certificate' in msg[0] and 'cipher' in msg[0]:
+                    continue
                 info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2])
                 message = message + str(xuhao) + '.' + str(info) + '\n'
                 xuhao += 1
@@ -827,7 +829,8 @@ def dingtalk(message_list, mgml_list, ld_list):
                 title = ''
             message + '\n' + '-----------------------------------------------'
             msg3 = message.lstrip('\n')
-            xiaoding.send_text(msg=msg3)
+            if message != '':
+                xiaoding.send_text(msg=msg3)
 
     # 敏感数据
     new_list2 = []
@@ -849,6 +852,8 @@ def dingtalk(message_list, mgml_list, ld_list):
                 num2) + ' 个' + '\n' + '-----------------------------------------------'
 
             for msg in i:
+                if str(msg[1]) != '200' and 'KB' not in str(msg[2]):
+                    continue
                 info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2])
                 message = message + str(xuhao) + '.' + str(info) + '\n'
                 xuhao += 1
@@ -856,7 +861,8 @@ def dingtalk(message_list, mgml_list, ld_list):
                 title = ''
             message + '\n' + '-----------------------------------------------'
             msg2 = message.lstrip('\n')
-            xiaoding.send_text(msg=msg2)
+            if message != '':
+                xiaoding.send_text(msg=msg2)
 
     # 单独@人员
     new_list = []
@@ -878,6 +884,8 @@ def dingtalk(message_list, mgml_list, ld_list):
                 num1) + ' 个' + '\n' + '-----------------------------------------------' + '\n' + '网址           ' + '    状态码    ' + '     标题      '
             message = ''
             for msg in i:
+                if str(msg[1]) != '200':
+                    continue
                 info = str(msg[0]) + '   ' + str(msg[2]) + '   ' + str(msg[1]) + '   '
                 message = message + str(xuhao) + '.' + str(info) + '\n'
                 xuhao += 1
@@ -885,7 +893,8 @@ def dingtalk(message_list, mgml_list, ld_list):
                 title = ''
             message + '\n' + '-----------------------------------------------'
             msg = message.lstrip('\n')
-            xiaoding.send_text(msg=msg)
+            if message != '':
+                xiaoding.send_text(msg=msg)
 
 
 def nuclei(filename):
