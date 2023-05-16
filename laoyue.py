@@ -817,10 +817,10 @@ def dingtalk(message_list, mgml_list, ld_list):
             xuhao = 1
             message = ''
             title = '新收集漏洞信息 ' + str(
-                num3) + ' 个' + '\n' + '-----------------------------------------------'
+                num3) + ' 个,排除一些抽象漏洞后如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
-                if 'ssl' in msg[0] or 'tls' in msg[0] or '-certificate' in msg[0] or 'cipher' in msg[0]:
+                if 'ssl' in msg[0] or 'tls' in msg[0] or '-certificate' in msg[0] or 'cipher' in msg[0] or 'mismatched' in msg[0]:
                     continue
                 info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2])
                 message = message + str(xuhao) + '.' + str(info) + '\n'
@@ -849,7 +849,7 @@ def dingtalk(message_list, mgml_list, ld_list):
             xuhao = 1
             message = ''
             title = '新收集敏感信息 ' + str(
-                num2) + ' 个' + '\n' + '-----------------------------------------------'
+                num2) + ' 个,其中返回为200且大于1KB的如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
                 if str(msg[1]) != '200' or 'KB' not in str(msg[2]):
@@ -881,10 +881,10 @@ def dingtalk(message_list, mgml_list, ld_list):
             xuhao = 1
             num1 = len(i)
             title = '新收集暴露面信息 ' + str(
-                num1) + ' 个' + '\n' + '-----------------------------------------------' + '\n' + '网址           ' + '    状态码    ' + '     标题      '
+                num1) + ' 个,其中状态码为200的如下' + '\n' + '-----------------------------------------------' + '\n' + '网址           ' + '    状态码    ' + '     标题      '
             message = ''
             for msg in i:
-                if str(msg[1]) != '200':
+                if str(msg[2]) != '200':
                     continue
                 info = str(msg[0]) + '   ' + str(msg[2]) + '   ' + str(msg[1]) + '   '
                 message = message + str(xuhao) + '.' + str(info) + '\n'
