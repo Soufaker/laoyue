@@ -820,7 +820,7 @@ def dingtalk(message_list, mgml_list, ld_list):
                 num3) + ' 个' + '\n' + '-----------------------------------------------'
 
             for msg in i:
-                if 'ssl' in msg[0] and 'tls' in msg[0] and '-certificate' in msg[0] and 'cipher' in msg[0]:
+                if 'ssl' in msg[0] or 'tls' in msg[0] or '-certificate' in msg[0] or 'cipher' in msg[0]:
                     continue
                 info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2])
                 message = message + str(xuhao) + '.' + str(info) + '\n'
@@ -852,7 +852,7 @@ def dingtalk(message_list, mgml_list, ld_list):
                 num2) + ' 个' + '\n' + '-----------------------------------------------'
 
             for msg in i:
-                if str(msg[1]) != '200' and 'KB' not in str(msg[2]):
+                if str(msg[1]) != '200' or 'KB' not in str(msg[2]):
                     continue
                 info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2])
                 message = message + str(xuhao) + '.' + str(info) + '\n'
