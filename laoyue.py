@@ -624,7 +624,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                     print(i.split(':')[0])
                     f.writelines(i.split(':')[0] + '\n')
                 else:
-                    f.writelines(i)
+                    f.writelines(i+ '\n')
 
         filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
                                                                   time.localtime()) + 'all_url_list.txt'
