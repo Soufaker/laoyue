@@ -37,11 +37,12 @@ def add_target(add_list1,description='AUTO'):
     try:
         target_id_list = []
         for url in add_list1:
-            post_data = {"targets": [{"address": url.strip(), "description": description}], "groups": []}
-            add_log = requests.post(awvs_url + '/api/v1/targets/add', data=json.dumps(post_data), headers=headers,
-                                    timeout=20, verify=False)
-            target_id = json.loads(add_log.content.decode())
-            target_id_list.append(target_id)
+            if '_' not in url:
+                post_data = {"targets": [{"address": url.strip(), "description": description}], "groups": []}
+                add_log = requests.post(awvs_url + '/api/v1/targets/add', data=json.dumps(post_data), headers=headers,
+                                        timeout=20, verify=False)
+                target_id = json.loads(add_log.content.decode())
+                target_id_list.append(target_id)
         while len(target_id_list) != 0:
             #打印目前的漏洞狀態
             vul_sum,new_high_vul,new_medium_vul,new_low_vul,result,message_push_all = first_push()
