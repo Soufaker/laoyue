@@ -1,4 +1,4 @@
-tldextract==3.3.0
+tldextract
 DingtalkChatbot==1.5.7
 openpyxl==2.5.4
 PySocks>=1.7.1
