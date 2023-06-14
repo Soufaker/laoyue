@@ -734,10 +734,12 @@ def quchong_info_list(all_info_list):
         with open(filename, 'w', encoding='utf-8') as f:
             for a in add_list:
                 print('1' + a)
-                a1 = a.split('://')[1]
-                print(a1)
-                f.writelines(a1 + '\n')
-
+                try:
+                    a1 = a.split('://')[1]
+                    print(a1)
+                    f.writelines(a1 + '\n')
+                except:
+                    continue
         file_filter_name = httpx_naabu_scan(filename, sm_cache_file_list)
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
