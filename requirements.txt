@@ -1,6 +1,6 @@
 tldextract
 DingtalkChatbot==1.5.7
-openpyxl==2.5.4
+openpyxl
 PySocks>=1.7.1
 Jinja2>=3.0.0
 certifi>=2017.4.17
