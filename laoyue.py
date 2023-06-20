@@ -1,6 +1,7 @@
 # author:Soufaker
 # time:2023/04/23
 import random
+import traceback
 import requests
 import time
 import optparse
@@ -425,7 +426,7 @@ def get_fofa_url(domain_l):
                         domain_all = domain_all + "domain=" + domain + '||'
                 search_key = '(' + domain_all[0:-2] + ')' + str(fofa_keyword)
                 search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
-                search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=' + fofa_size + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,titel,protocol,header,server,product,icp,domain"
+                search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=' + fofa_size + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,title,protocol,header,server,product,icp,domain"
                 print(search)
                 try:
                     r = requests.get(search, verify=False)
@@ -514,12 +515,14 @@ def get_all_url_fo_yt(company_info_list, company_domains_file):
             f.writelines(a + '\n')
     print(all_qc_domain_list)
     if x_domain != '1':
-        # 调用鹰图,并添加到所有搜集的列表
-        print('开始调用鹰图')
-        yt_get_info(all_qc_domain_list)
-
-        print('开始使用fofa查询')
-        get_fofa_url(all_qc_domain_list)
+        if notauto != True:
+            # 调用鹰图,并添加到所有搜集的列表
+            if is_hunter == '0':
+                print('开始调用鹰图')
+                yt_get_info(all_qc_domain_list)
+            if is_fofa == '0':
+                print('开始使用fofa查询')
+                get_fofa_url(all_qc_domain_list)
 
 
 def get_company_jt_info(name):
@@ -607,7 +610,7 @@ def save_cache(target_list):
 
 
 def httpx_naabu_scan(filename, sm_cache_file_list):
-    caches_file_list = open('./caches/sm_cache.txt', 'a', encoding='utf-8')
+    caches_file_list = open('./caches/sm_cache.txt', 'r', encoding='utf-8').read().split('\n')
     caches_file = open('./caches/sm_cache.txt', 'a', encoding='utf-8')
     try:
         file_list2 = open(filename, 'r', encoding='utf-8').read().split('\n')
@@ -654,8 +657,11 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                 info.append(str(f[2].split('\x1b')[1][4:]))
                 httpx_info.append(info)
         print(httpx_info)
-        print('filename_filter_name', filename_filter_name)
 
+        #
+        new_filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()) + 'new_all_url_list.txt'
+        print('new_filename_filter_name', new_filename_filter_name)
+        caches_file_list_1 = open(new_filename_filter_name, 'w+', encoding='utf-8')
         # 写入awvs文件
         file_list = []
         for f in httpx_info:
@@ -668,8 +674,10 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                 l2 = 'https://' + l
                 if l2 not in sm_cache_file_list:
                     caches_file.write(l2 + '\n')
+                    caches_file_list_1.writelines(l2 + '\n')
                 if l1 not in sm_cache_file_list:
                     caches_file.write(l1 + '\n')
+                    caches_file_list_1.writelines(l1 + '\n')
             else:
                 if l not in sm_cache_file_list:
                     print('0000000000000000000000')
@@ -679,9 +687,12 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         # awvs
         scan_awvs(file_list)
 
-        return filename_filter_name
-    except:
+        return new_filename_filter_name
+    except Exception as e:
+        traceback.print_exc()
+        print(e)
         os.system('touch ' + filename_filter_name)
+        print('12312312')
         if len(httpx_info) > 0:
             file_list2 = []
             for f in httpx_info:
@@ -703,7 +714,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                     if l not in sm_cache_file_list:
                         print('0000000000000000000000')
                         caches_file.write(l + '\n')
-                        caches_file_list_1.write(l + '\n')
+
 
         return filename_filter_name
 
@@ -740,7 +751,35 @@ def quchong_info_list(all_info_list):
                     f.writelines(a1 + '\n')
                 except:
                     continue
+
         file_filter_name = httpx_naabu_scan(filename, sm_cache_file_list)
+        print('ssss')
+        print(file_filter_name)
+        print('xxxxx')
+        if ml == True:
+            mgwj_list = ml_sm(file_filter_name)
+
+        if ld == True:
+            ld_list = nuclei(file_filter_name)
+
+    # 扫描自己收集的资产
+    if notauto == True:
+        filename = './result/notautolist/notautolist.txt'
+        new_filename = './result/notautolist/'+str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))+'new_notautolist.txt'
+        add_list = open(filename, 'r', encoding='utf-8').read().split('\n')
+        with open(new_filename, 'w', encoding='utf-8') as f:
+            for a in add_list:
+                print('1' + a)
+                try:
+                    a1 = a.split('://')[1]
+                    print(a1)
+                    f.writelines(a1 + '\n')
+                except:
+                    continue
+        file_filter_name = httpx_naabu_scan(new_filename, sm_cache_file_list)
+        print('ssss')
+        print(file_filter_name)
+        print('xxxxx')
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
 
@@ -1005,6 +1044,7 @@ if __name__ == '__main__':
     parser.add_option('-m', '--ml', action='store_true', dest="ml_sm")
     parser.add_option('-n', '--nl', action='store_true', dest="ld_sm")
     parser.add_option('-a', '--av', action='store_true', dest="av_sm")
+    parser.add_option('-N', '--notauto', action='store_true', dest="not_auto")
     options, args = parser.parse_args()
 
     # 加载配置文件
@@ -1034,6 +1074,10 @@ if __name__ == '__main__':
     yt_keword = ''
     global fofa_count
     fofa_count = ''
+    global is_fofa
+    is_fofa = ''
+    global is_hunter
+    is_hunter = ''
     global file_filter_name
     file_filter_name = ''
     global httpx_info
@@ -1043,8 +1087,11 @@ if __name__ == '__main__':
     for i in c_len:
         hunter_config_list.append(cf.get('hunter', i))
     yt_keword = ''
+
     fofa_count = cf.get('fofa', 'count')
     fofa_size = cf.get('fofa', 'size')
+    is_fofa = cf.get('fofa', 'is_fofa')
+    is_hunter = cf.get('hunter', 'is_hunter')
     yt_size = cf.get('hunter', 'size')
     fofa_keyword = cf.get('fofa', 'keyword')
     yt_keword = cf.get('hunter', 'keyword')
@@ -1094,6 +1141,9 @@ if __name__ == '__main__':
     global avsm
     avsm = options.av_sm
 
+    global notauto
+    notauto = options.not_auto
+
     global zs_domains
     zs_domain = options.zs_domains
 
@@ -1124,6 +1174,6 @@ if __name__ == '__main__':
         except:
             print('发送消息异常')
             os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -m &')
-
-    time.sleep(360)
-    os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  -m &')
+    if notauto != True:
+        time.sleep(360)
+        os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n  -m &')
