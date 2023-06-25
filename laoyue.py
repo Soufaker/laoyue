@@ -306,6 +306,9 @@ def yt_info(url):
                         continue
                 info = []
                 arr_url = loadurl[i]['url']
+                for b in black_domian:
+                    if b in arr_url:
+                        continue
                 # if '中国' in loadurl[i]['isp']:
                 #     arr_ip = loadurl[i]['ip']
                 # else:
@@ -344,7 +347,10 @@ def yt_get_info(name_list):
         for name in name_list:
             if name == '':
                 continue
-            search_key = '(domain=' + name + ')' + str(yt_keword)
+            if isIP(name):
+                search_key = '(ip=' + name + ')' + str(yt_keword)
+            else:
+                search_key = '(domain=' + name + ')' + str(yt_keword)
             keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
             page = 1
             api_num = 0
@@ -422,8 +428,13 @@ def get_fofa_url(domain_l):
             try:
                 domain_all = ''
                 for domain in domain_list:
+                    print('11')
                     if domain != '':
-                        domain_all = domain_all + "domain=" + domain + '||'
+                        if isIP(domain):
+                            domain_all = domain_all + "ip=" + domain + '||'
+                        else:
+                            domain_all = domain_all + "domain=" + domain + '||'
+                print(domain_all)
                 search_key = '(' + domain_all[0:-2] + ')' + str(fofa_keyword)
                 search_data_b64 = base64.b64encode(search_key.encode("utf-8")).decode("utf-8")
                 search = 'https://fofa.info/api/v1/search/all?email=' + fofa_email + '&size=' + fofa_size + '&key=' + fofa_key + '&qbase64=' + search_data_b64 + "&fields=host,ip,port,title,protocol,header,server,product,icp,domain"
@@ -444,6 +455,9 @@ def get_fofa_url(domain_l):
                                 ip = isCDN(result[9], result[1])
                                 result[1] = ip
                             if j == 0:
+                                for b in black_domian:
+                                    if b in result[0]:
+                                        continue
                                 if 'http' not in result[0][0:5]:
                                     result[0] = result[4] + '://' + result[0]
                             if j == 6:
@@ -573,6 +587,13 @@ def get_company_jt_info(name):
 
     return all_info
 
+#判断是ip还是域名
+def isIP(str):
+    p = re.compile('^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$')
+    if p.match(str):
+        return True
+    else:
+        return False
 
 def save_cache(target_list):
     yt_fofa_add_list = []
@@ -673,16 +694,16 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                 l1 = 'http://' + l
                 l2 = 'https://' + l
                 if l2 not in sm_cache_file_list:
-                    caches_file.write(l2 + '\n')
+                    caches_file.writelines(l2 + '\n')
                     caches_file_list_1.writelines(l2 + '\n')
                 if l1 not in sm_cache_file_list:
-                    caches_file.write(l1 + '\n')
+                    caches_file.writelines(l1 + '\n')
                     caches_file_list_1.writelines(l1 + '\n')
             else:
                 if l not in sm_cache_file_list:
                     print('0000000000000000000000')
-                    caches_file.write(l + '\n')
-
+                    caches_file.writelines(l + '\n')
+                    caches_file_list_1.writelines(l + '\n')
         caches_file.close()
         # awvs
         scan_awvs(file_list)
@@ -714,7 +735,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                     if l not in sm_cache_file_list:
                         print('0000000000000000000000')
                         caches_file.write(l + '\n')
-
+                        caches_file_list_1.write(l1 + '\n')
 
         return filename_filter_name
 
@@ -798,7 +819,7 @@ def quchong_info_list(all_info_list):
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
     os.system('python3 ./inifile/dirsearch-master/dirsearch.py  -r 3 -l' + str(
-        filename) + ' -w ./inifile/dict/file_top_200.txt -o ' + str(dir_file))
+        filename) + ' -w ./inifile/dict/file_top_200.txt')
     list1 = []
     list2 = []
     try:
@@ -808,8 +829,8 @@ def ml_sm(filename):
             for t in test1:
                 if t[0] != '#' and t[0] != '\n' and '3KB' not in t and '3B' not in t:
                     list1.append(t.strip('\n'))
-    except:
-        print('该地址无敏感目录')
+    except Exception as e:
+        print('该地址无敏感目录',e)
         return list2
 
     print(list1)
