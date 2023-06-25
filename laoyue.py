@@ -306,9 +306,6 @@ def yt_info(url):
                         continue
                 info = []
                 arr_url = loadurl[i]['url']
-                for b in black_domian:
-                    if b in arr_url:
-                        continue
                 # if '中国' in loadurl[i]['isp']:
                 #     arr_ip = loadurl[i]['ip']
                 # else:
@@ -336,7 +333,12 @@ def yt_info(url):
                 info.append(arr_all_component)
                 info.append(arr_beianhhao)
                 # print(info)
-                all_info_list.append(info)
+                flag = True
+                for b in black_domian:
+                    if b in arr_url:
+                        flag = False
+                if flag:
+                    all_info_list.append(info)
             return 1
         else:
             return 2
@@ -455,9 +457,6 @@ def get_fofa_url(domain_l):
                                 ip = isCDN(result[9], result[1])
                                 result[1] = ip
                             if j == 0:
-                                for b in black_domian:
-                                    if b in result[0]:
-                                        continue
                                 if 'http' not in result[0][0:5]:
                                     result[0] = result[4] + '://' + result[0]
                             if j == 6:
@@ -480,7 +479,12 @@ def get_fofa_url(domain_l):
                                 result[j] = result[j][9:12]
                             info.append(result[j])
                         print(info)
-                        all_info_list.append(info)
+                        flag = True
+                        for b in black_domian:
+                            if b in result[0]:
+                                flag = False
+                        if flag:
+                            all_info_list.append(info)
                 except:
                     continue
             except:
