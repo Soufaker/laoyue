@@ -739,7 +739,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                     if l not in sm_cache_file_list:
                         print('0000000000000000000000')
                         caches_file.write(l + '\n')
-                        caches_file_list_1.write(l1 + '\n')
+                        caches_file_list_1.write(l + '\n')
 
         return filename_filter_name
 
