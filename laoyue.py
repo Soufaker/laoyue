@@ -657,7 +657,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
                                                                   time.localtime()) + 'all_url_list.txt'
 
-        port_scan = './inifile/naabu/naabu  -l ' + new_filename_temp + ' -top-ports 1000 -o ' + filename_temp
+        port_scan = './inifile/naabu/naabu  -l ' + new_filename_temp + '-top-ports 1000 -o ' + filename_temp
         print('2 ' + port_scan)
         os.system(port_scan)  # &> /dev/null
         httpx_filename = filename_temp[0:-4] + '_httpx.txt'
@@ -800,6 +800,8 @@ def quchong_info_list(all_info_list):
                     print(a1)
                     f.writelines(a1 + '\n')
                 except:
+                    if 'http:' not in a and 'htts:' not in a:
+                        f.writelines(a + '\n')
                     continue
         file_filter_name = httpx_naabu_scan(new_filename, sm_cache_file_list)
         print('ssss')
