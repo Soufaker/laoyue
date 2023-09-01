@@ -828,12 +828,16 @@ def ml_sm(filename):
         filename) + ' -w ./inifile/dict/file_top_200.txt  -o ' + dir_file)
     list1 = []
     list2 = []
+    #返回的字节长度列表
+    msg_info = []
     try:
         with open(dir_file, 'r') as f:
             print(dir_file)
             test1 = f.readlines()
             for t in test1:
-                if t[0] != '#' and t[0] != '\n' and '3KB' not in t and '3B' not in t:
+                msg_info.append(t[0])
+            for t in test1:
+                if t[0] != '#' and t[0] != '\n' and '3KB' not in t and '3B' not in t and '2KB' not in t and '1KB' not in t and msg_info.count(t[0]) < 10:
                     list1.append(t.strip('\n'))
     except Exception as e:
         print('该地址无敏感目录',e)
@@ -868,6 +872,8 @@ def dingtalk(message_list, mgml_list, ld_list):
     # Text消息@所有人
     # xiaoding.send_text(msg=c, is_at_all=True)
 
+    #漏洞信息个数
+    msg_info = []
     # 漏洞信息
     new_list3 = []
     num3 = len(ld_list)
@@ -888,7 +894,10 @@ def dingtalk(message_list, mgml_list, ld_list):
                 num3) + ' 个,排除一些抽象漏洞后如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
-                if 'ssl' in msg[0] or 'tls' in msg[0] or '-certificate' in msg[0] or 'cipher' in msg[0] or 'mismatched' in msg[0]:
+                msg_info.append(msg[0])
+
+            for msg in i:
+                if 'ssl' in msg[0] or 'tls' in msg[0] or '-certificate' in msg[0] or 'cipher' in msg[0] or 'mismatched' in msg[0] or msg_info.count(msg[0]) > 6:
                     continue
                 info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2])
                 message = message + str(xuhao) + '.' + str(info) + '\n'
