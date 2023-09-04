@@ -166,15 +166,16 @@ def get_all_page_id(id):
     return id_list
 
 
-def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list, httpx_info):
+def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list, httpx_info,fs_list):
     t = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     wb = Workbook()
     ws1 = wb.create_sheet('天眼查基本信息', 0)
     ws2 = wb.create_sheet('收集域名信息', 0)
-    # ws3 = wb.create_sheet('git监控信息',0)
+    ws3 = wb.create_sheet('fscan扫描信息',0)
     ws4 = wb.create_sheet('敏感信息', 0)
     ws5 = wb.create_sheet('漏洞信息', 0)
     ws6 = wb.create_sheet('httpx信息', 0)
+
 
     ws1['A1'] = '公司名'
     ws1['B1'] = '网址'
@@ -208,17 +209,10 @@ def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list, httpx_i
     ws2.column_dimensions['G'].width = 30
     ws2.column_dimensions['H'].width = 25
 
-    # ws3['A1'] = '疑似存在信息泄露标签'
-    # ws3['B1'] = '网址'
-    # ws3['C1'] = '内容'
-    # ws3['D1'] = '来源'
-    #
-    # ws3.column_dimensions['A'].width = 25
-    # ws3.column_dimensions['B'].width = 40
-    # ws3.column_dimensions['C'].width = 70
-    # ws3.column_dimensions['D'].width = 15
-    # for l in github_list:
-    #     ws3.append(list(l))
+    ws3['A1'] = '漏洞地址'
+    ws3.column_dimensions['A'].width = 70
+    for l in fs_list:
+        ws3.append(l)
 
     ws4['A1'] = '地址'
     ws4['B1'] = '状态码'
@@ -252,6 +246,7 @@ def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list, httpx_i
 
     for l in httpx_info:
         ws6.append(l)
+
 
     wb.save("./result/baolumian/暴露面收集" + t + ".xlsx")
 
@@ -399,7 +394,7 @@ def get_title(url):
 def isCDN(domain, ip):  # 判断目标是否存在CDN
     parm = 'nslookup ' + domain
     result = os.popen(parm).read()
-    if result.count(".") > 8:  # nslookup [ip]的返回结果中，多于8个.代表返回多于1一个ip，即存在cdn
+    if result.count("Name") > 1:  # nslookup [ip]的返回结果中，多于8个.代表返回多于1一个ip，即存在cdn
         return "存在CDN" + str(ip)
     else:
         if ip not in ip_list:
@@ -452,13 +447,16 @@ def get_fofa_url(domain_l):
                         temp = ''
                         if result[4] == 'unknown':
                             result[4] = 'http'
+                        if result[9] not in domain_l:
+                            continue
                         for j in range(0, int(num) - 1):
                             if j == 1:
                                 ip = isCDN(result[9], result[1])
                                 result[1] = ip
                             if j == 0:
+                                print(result[0])
                                 if 'http' not in result[0][0:5]:
-                                    result[0] = result[4] + '://' + result[0]
+                                    result[0] = result[4] + '://' + result[9]
                             if j == 6:
                                 temp = result[j]
                                 continue
@@ -760,6 +758,7 @@ def quchong_info_list(all_info_list):
     new_list = []
     mgwj_list = []
     ld_list = []
+    fs_list = []
     for all in all_info_list:
         if all not in new_list:
             new_list.append(all)
@@ -781,11 +780,15 @@ def quchong_info_list(all_info_list):
         print('ssss')
         print(file_filter_name)
         print('xxxxx')
+
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
 
         if ld == True:
             ld_list = nuclei(file_filter_name)
+
+        if fs == True:
+            fs_list = fscan(ip_list)
 
     # 扫描自己收集的资产
     if notauto == True:
@@ -813,13 +816,16 @@ def quchong_info_list(all_info_list):
         if ld == True:
             ld_list = nuclei(file_filter_name)
 
+        if fs == True:
+            fs_list = fscan(file_filter_name)
+
     print('==============================')
     # print(mgwj_list)
     # print(ld_list)
     print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
     print(yt_fofa_info_list)
     print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
-    return yt_fofa_info_list, mgwj_list, ld_list
+    return yt_fofa_info_list, mgwj_list, ld_list,fs_list
 
 
 def ml_sm(filename):
@@ -837,7 +843,7 @@ def ml_sm(filename):
             for t in test1:
                 msg_info.append(t[0])
             for t in test1:
-                if t[0] != '#' and t[0] != '\n' and '3KB' not in t and '3B' not in t and '2KB' not in t and '1KB' not in t and msg_info.count(t[0]) < 10:
+                if t[0] != '#' and t[0] != '\n' and '3KB' not in t and '3B' not in t and '2KB' not in t and '1KB' not in t and '7KB' not in t and msg_info.count(t[0]) < 10:
                     list1.append(t.strip('\n'))
     except Exception as e:
         print('该地址无敏感目录',e)
@@ -861,7 +867,7 @@ def ml_sm(filename):
     return list2
 
 
-def dingtalk(message_list, mgml_list, ld_list):
+def dingtalk(message_list, mgml_list, ld_list, fs_list):
     # 钉钉WebHook地址
     DWebHook = 'https://oapi.dingtalk.com/robot/send?access_token=' + str(dingding_hook)
     Dsecret = dingding_key  # 可选：创建机器人勾选“加签”选项时使用
@@ -871,6 +877,35 @@ def dingtalk(message_list, mgml_list, ld_list):
     # xiaoding = DingtalkChatbot(webhook, pc_slide=True)  # 方式三：设置消息链接在PC端侧边栏打开（v1.5以上新功能）
     # Text消息@所有人
     # xiaoding.send_text(msg=c, is_at_all=True)
+
+    # fscan扫描漏洞信息
+    new_list4 = []
+    num4 = len(fs_list)
+    print(fs_list)
+    if int(num4) > 100:
+        n4 = num4 // 50
+    else:
+        n4 = 1
+
+    for i in range(n4):
+        one_list = ld_list[math.floor(i / n4 * num4):math.floor((i + 1) / n4 * num4)]
+        new_list4.append(one_list)
+    if num4 != 0:
+        for i in new_list4:
+            xuhao = 1
+            message = ''
+            title = '新收集fscan扫描漏洞信息 ' + str(
+                num4) + ' 个' + '\n' + '-----------------------------------------------'
+
+            for msg in i:
+                message = message + str(xuhao) + '.' + str(msg) + '\n'
+                xuhao += 1
+                message = title.lstrip() + '\n' + message
+                title = ''
+            message + '\n' + '-----------------------------------------------'
+            msg4 = message.lstrip('\n')
+            if message != '':
+                xiaoding.send_text(msg=msg4)
 
     #漏洞信息个数
     msg_info = []
@@ -973,6 +1008,28 @@ def dingtalk(message_list, mgml_list, ld_list):
             if message != '':
                 xiaoding.send_text(msg=msg)
 
+
+# 调用搜集的所有IP列表进行fscan扫描
+def fscan(ip_list):
+    url_file = './result/allip/'+ time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_allip.txt'
+    loud_file = './result/fscan/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_fscan.txt'
+    with open(url_file,'w') as f:
+        for ip in ip_list:
+            f.writelines(ip.strip('\n'))
+
+    # os.system('./inifile/lousao/fscan')
+    os.system('./inifile/lousao/fscan -np -p 1-65535 -hf ' + url_file + ' -o ' + str(loud_file))
+    list1 = []
+    with open(loud_file, 'r') as f:
+        print(loud_file)
+        test1 = f.readlines()
+        for t in test1:
+            if '[+]' in t:
+                list1.append(t.strip('\n'))
+            else:
+                print('没扫到漏洞!')
+
+    return list1
 
 def nuclei(filename):
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
@@ -1079,6 +1136,7 @@ if __name__ == '__main__':
     parser.add_option('-r', '--recursion', action='store', default='', dest="recursion_level")
     parser.add_option('-m', '--ml', action='store_true', dest="ml_sm")
     parser.add_option('-n', '--nl', action='store_true', dest="ld_sm")
+    parser.add_option('-f', '--fs', action='store_true', dest="fs_sm")
     parser.add_option('-a', '--av', action='store_true', dest="av_sm")
     parser.add_option('-N', '--notauto', action='store_true', dest="not_auto")
     options, args = parser.parse_args()
@@ -1174,6 +1232,9 @@ if __name__ == '__main__':
     global ld
     ld = options.ld_sm
 
+    global fs
+    fs = options.fs_sm
+
     global avsm
     avsm = options.av_sm
 
@@ -1195,18 +1256,18 @@ if __name__ == '__main__':
 
     # 调用fofa,yt获取信息
     get_all_url_fo_yt(company_info_list, company_domains_file)
-    quchong_list, mgwj_list, ld_list = quchong_info_list(all_info_list)
+    quchong_list, mgwj_list, ld_list,fs_list = quchong_info_list(all_info_list)
 
     # github监控
     print(all_company_name_list)
     # github_list = get_github_info(company_info_list,all_company_name_list)
     github_list = []
-    if len(quchong_list) != 0 or len(github_list) != 0 or len(mgwj_list) != 0 or len(ld_list) != 0:
-        Write_To_Excel(company_info_list, quchong_list, mgwj_list, ld_list, httpx_info)
+    if len(quchong_list) != 0 or len(github_list) != 0 or len(mgwj_list) != 0 or len(ld_list) != 0 or len(fs_list) != 0:
+        Write_To_Excel(company_info_list, quchong_list, mgwj_list, ld_list, httpx_info, fs_list)
         # 发送信息
         try:
             set_info = quchong(httpx_info)
-            dingtalk(set_info, mgwj_list, ld_list)
+            dingtalk(set_info, mgwj_list, ld_list,fs_list)
         except:
             print('发送消息异常')
             os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -m &')
