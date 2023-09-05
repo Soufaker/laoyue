@@ -1,5 +1,5 @@
 # author:Soufaker
-# time:2023/04/23
+# time:2023/09/05
 import random
 import traceback
 import requests
@@ -837,7 +837,7 @@ def quchong_info_list(all_info_list):
 
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
-    os.system('python3 ./inifile/dirsearch-master/dirsearch.py  -r 3 -l' + str(
+    os.system('python3 ./inifile/dirsearch-master/dirsearch.py  -l' + str(
         filename) + ' -w ./inifile/dict/file_top_200.txt  -o ' + dir_file)
     list1 = []
     list2 = []
@@ -901,7 +901,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
         for i in new_list4:
             xuhao = 1
             message = ''
-            title = '新收集fscan扫描漏洞信息 ' + str(
+            title = tag + ':新收集fscan扫描漏洞信息 ' + str(
                 num4) + ' 个' + '\n' + '-----------------------------------------------'
 
             for msg in i:
@@ -932,7 +932,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
         for i in new_list3:
             xuhao = 1
             message = ''
-            title = '新收集漏洞信息 ' + str(
+            title = tag + ':新收集漏洞信息 ' + str(
                 num3) + ' 个,排除一些抽象漏洞后如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
@@ -967,7 +967,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
         for i in new_list2:
             xuhao = 1
             message = ''
-            title = '新收集敏感信息 ' + str(
+            title = tag+':新收集敏感信息 ' + str(
                 num2) + ' 个,其中返回为200且大于1KB的如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
@@ -999,7 +999,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
             print(i)
             xuhao = 1
             num1 = len(i)
-            title = '新收集暴露面信息 ' + str(
+            title = tag+':新收集暴露面信息 ' + str(
                 num1) + ' 个,其中状态码为200的如下' + '\n' + '-----------------------------------------------' + '\n' + '网址           ' + '    状态码    ' + '     标题      '
             message = ''
             for msg in i:
@@ -1217,12 +1217,13 @@ if __name__ == '__main__':
     file_filter_name = ''
     global httpx_info
     httpx_info = []
+    global tag
+    tag = ''
 
     c_len = cf.options('hunter')
     for i in c_len:
         hunter_config_list.append(cf.get('hunter', i))
     yt_keword = ''
-
     fofa_count = cf.get('fofa', 'count')
     fofa_size = cf.get('fofa', 'size')
     is_fofa = cf.get('fofa', 'is_fofa')
@@ -1237,6 +1238,7 @@ if __name__ == '__main__':
     x_auth_token = cf.get('tyz', 'x-auth-token')
     black = cf.get('black_domain', 'domain')
     black_domian = black.split(',')
+    tag = cf.get('tag','tag')
     # 所有搜集到的URL列表
     all_url_list = []
 
