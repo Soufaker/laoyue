@@ -212,7 +212,9 @@ def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list, httpx_i
     ws3['A1'] = '漏洞地址'
     ws3.column_dimensions['A'].width = 70
     for l in fs_list:
-        ws3.append(l)
+        list1 = []
+        list1.append(l)
+        ws3.append(list1)
 
     ws4['A1'] = '地址'
     ws4['B1'] = '状态码'
@@ -456,7 +458,10 @@ def get_fofa_url(domain_l):
                             if j == 0:
                                 print(result[0])
                                 if 'http' not in result[0][0:5]:
-                                    result[0] = result[4] + '://' + result[0]
+                                    if 'http' not in result[4]:
+                                        result[0] = 'https://' + result[0]
+                                    else:
+                                        result[0] = result[4] + '://' + result[0]
                             if j == 6:
                                 temp = result[j]
                                 continue
@@ -665,7 +670,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                 print(h)
                 f.writelines('https://' + h)
                 f.writelines('http://' + h)
-        http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -mc 200,401,403,404,302,301  -title  -tech-detect -status-code -timeout 5 -threads 30  -o  ' + filename_filter_name  # &> /dev/null'
+        http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -mc 200,401,403,404,302,301  -title  -tech-detect -status-code -timeout 1 -threads 50  -o  ' + filename_filter_name  # &> /dev/null'
         print('1 ' + http_scan)
         os.system(http_scan)  # &> /dev/null
         # os.system('rm -rf ' + filename)
@@ -710,7 +715,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         # awvs
         scan_awvs(file_list)
 
-        return new_filename_filter_name
+        return new_filename_filter_name,httpx_filename
     except Exception as e:
         traceback.print_exc()
         print(e)
@@ -739,7 +744,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                         caches_file.write(l + '\n')
                         caches_file_list_1.write(l + '\n')
 
-        return filename_filter_name
+        return filename_filter_name,httpx_filename
 
 
 def scan_awvs(file_list):
@@ -776,7 +781,7 @@ def quchong_info_list(all_info_list):
                 except:
                     continue
 
-        file_filter_name = httpx_naabu_scan(filename, sm_cache_file_list)
+        file_filter_name,port_file_name = httpx_naabu_scan(filename, sm_cache_file_list)
         print('ssss')
         print(file_filter_name)
         print('xxxxx')
@@ -786,7 +791,7 @@ def quchong_info_list(all_info_list):
 
 
         if fs == True:
-            fs_list = fscan(ip_list)
+            fs_list = fscan(port_file_name,ip_list)
 
         if ld == True:
             ld_list = nuclei(file_filter_name)
@@ -890,7 +895,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
         n4 = 1
 
     for i in range(n4):
-        one_list = ld_list[math.floor(i / n4 * num4):math.floor((i + 1) / n4 * num4)]
+        one_list = fs_list[math.floor(i / n4 * num4):math.floor((i + 1) / n4 * num4)]
         new_list4.append(one_list)
     if num4 != 0:
         for i in new_list4:
@@ -1012,32 +1017,65 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
 
 
 # 调用搜集的所有IP列表进行fscan扫描
-def fscan(ip_list):
-    url_file = './result/allip/'+ time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_allip.txt'
+def fscan(filename,ip_list):
+    l = open('./result/allip/ip_cache.txt', 'r', encoding='utf-8').read().split('\n')
+    url_file = './result/allip/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_allip.txt'
     loud_file = './result/fscan/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_fscan.txt'
+    loud_file2 = './result/fscan/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_ip_fscan.txt'
     with open(url_file,'w') as f:
         for ip in ip_list:
-            f.writelines(ip + '\n')
-
-    # os.system('./inifile/lousao/fscan')
-    os.system('./inifile/lousao/fscan -np -p 1-65535 -hf ' + url_file + ' -o ' + str(loud_file))
+            if ip not in l:
+                f.writelines(ip + '\n')
+    os.system('./inifile/lousao/fscan  -uf ' + filename + ' -o ' + str(loud_file))
+    os.system('./inifile/lousao/fscan  -p 22,3389,445,3306,1433,1521,21,27017,11211,5432,23,25,465,110,995,143,993,5900,6379 -np -hf ' + url_file + ' -o ' + str(loud_file2))
     list1 = []
+    with open('./result/allip/ip_cache.txt','a') as f:
+        for ip in ip_list:
+            f.writelines(ip + '\n')
     try:
         with open(loud_file, 'r') as f:
             print(loud_file)
             test1 = f.readlines()
             for t in test1:
-                if '[+]' in t:
+                if '[+]' in t and '扫描结束' not in t:
                     list1.append(t.strip('\n'))
     except:
-        print('未扫到漏洞!')
+        print('无漏洞')
+    try:
+        with open(loud_file2, 'r') as f:
+            print(loud_file2)
+            test1 = f.readlines()
+            for t in test1:
+                if '[+]' in t and '扫描结束' not in t:
+                    list1.append(t.strip('\n'))
+    except:
+        print('无漏洞')
+    try:
+        with open(loud_file, 'r') as f:
+            print(loud_file)
+            test1 = f.readlines()
+            for t in test1:
+                if '[*]' in t and 'alive ports' not in t:
+                    list1.append(t.strip('\n'))
+    except:
+        print('无漏洞!')
+    try:
+        with open(loud_file2, 'r') as f:
+            print(loud_file2)
+            test1 = f.readlines()
+            for t in test1:
+                if '[*]' in t and 'alive ports' not in t:
+                    list1.append(t.strip('\n'))
+    except:
+        print('无漏洞!')
 
+    print(list1)
     return list1
 
 def nuclei(filename):
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
     # os.system('./inifile/lousao/nuclei -un -ut')
-    os.system('./inifile/lousao/nuclei -s low,medium,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
+    os.system('./inifile/lousao/nuclei -mhe 3 -timeout 1 -rl 300 -c 50 -as -s low,medium,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
     list1 = []
     list2 = []
     try:
