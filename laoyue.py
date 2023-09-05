@@ -456,7 +456,7 @@ def get_fofa_url(domain_l):
                             if j == 0:
                                 print(result[0])
                                 if 'http' not in result[0][0:5]:
-                                    result[0] = result[4] + '://' + result[9]
+                                    result[0] = result[4] + '://' + result[0]
                             if j == 6:
                                 temp = result[j]
                                 continue
@@ -784,11 +784,13 @@ def quchong_info_list(all_info_list):
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
 
-        if ld == True:
-            ld_list = nuclei(file_filter_name)
 
         if fs == True:
             fs_list = fscan(ip_list)
+
+        if ld == True:
+            ld_list = nuclei(file_filter_name)
+
 
     # 扫描自己收集的资产
     if notauto == True:
@@ -1015,19 +1017,20 @@ def fscan(ip_list):
     loud_file = './result/fscan/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_fscan.txt'
     with open(url_file,'w') as f:
         for ip in ip_list:
-            f.writelines(ip.strip('\n'))
+            f.writelines(ip + '\n')
 
     # os.system('./inifile/lousao/fscan')
     os.system('./inifile/lousao/fscan -np -p 1-65535 -hf ' + url_file + ' -o ' + str(loud_file))
     list1 = []
-    with open(loud_file, 'r') as f:
-        print(loud_file)
-        test1 = f.readlines()
-        for t in test1:
-            if '[+]' in t:
-                list1.append(t.strip('\n'))
-            else:
-                print('没扫到漏洞!')
+    try:
+        with open(loud_file, 'r') as f:
+            print(loud_file)
+            test1 = f.readlines()
+            for t in test1:
+                if '[+]' in t:
+                    list1.append(t.strip('\n'))
+    except:
+        print('未扫到漏洞!')
 
     return list1
 
