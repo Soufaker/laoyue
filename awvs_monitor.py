@@ -16,6 +16,7 @@ awvs_key = cf.get('awvs','awvs_key')
 profile_id = cf.get('awvs','profile_id')
 scan_time = cf.get('awvs','scan_time')
 scan_count = cf.get('awvs','scan_count')
+tag = cf.get('tag','weixin_tag')
 webhook_key = cf.get('webhook','webhook_key')
 webhook_url='https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key='+webhook_key  #漏洞结果，企业微信漏洞通知key
 headers = {'Content-Type': 'application/json',"X-Auth": awvs_key}
@@ -56,7 +57,7 @@ def add_target(add_list1,description='AUTO'):
                 new_high = new_high_vul - temp_high_vul
                 new_sum = vul_sum - temp_sum
                 if new_sum > 30:
-                    message_push = message_push + '亲爱的主人,本次新增加漏洞数量为:'+str(new_sum)+'\n'+'新增加高危数量:'+str(new_high)+'\n'+'新增加中危数量:'+str(new_medium)+'\n'+\
+                    message_push = message_push + '亲爱的主人,本次'+tag+'新增加漏洞数量为:'+str(new_sum)+'\n'+'新增加高危数量:'+str(new_high)+'\n'+'新增加中危数量:'+str(new_medium)+'\n'+\
                                    '新增加低危数量:'+str(new_low)+'\n'+'--------------------------\n'+message_push_all
                     temp_sum = vul_sum
                     temp_high_vul = new_high_vul

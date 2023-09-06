@@ -396,7 +396,8 @@ def get_title(url):
 def isCDN(domain, ip):  # 判断目标是否存在CDN
     parm = 'nslookup ' + domain
     result = os.popen(parm).read()
-    if result.count("Name") > 1:  # nslookup [ip]的返回结果中，多于8个.代表返回多于1一个ip，即存在cdn
+    l = result.split('Name:')
+    if result.count("Name") > 1 or domain not in l[1]:
         return "存在CDN" + str(ip)
     else:
         if ip not in ip_list:
@@ -901,7 +902,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
         for i in new_list4:
             xuhao = 1
             message = ''
-            title = tag + ':新收集fscan扫描漏洞信息 ' + str(
+            title = dingding_tag + ':新收集fscan扫描漏洞信息 ' + str(
                 num4) + ' 个' + '\n' + '-----------------------------------------------'
 
             for msg in i:
@@ -932,7 +933,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
         for i in new_list3:
             xuhao = 1
             message = ''
-            title = tag + ':新收集漏洞信息 ' + str(
+            title = dingding_tag + ':新收集漏洞信息 ' + str(
                 num3) + ' 个,排除一些抽象漏洞后如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
@@ -967,7 +968,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
         for i in new_list2:
             xuhao = 1
             message = ''
-            title = tag+':新收集敏感信息 ' + str(
+            title = dingding_tag+':新收集敏感信息 ' + str(
                 num2) + ' 个,其中返回为200且大于1KB的如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
@@ -999,7 +1000,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
             print(i)
             xuhao = 1
             num1 = len(i)
-            title = tag+':新收集暴露面信息 ' + str(
+            title = dingding_tag+':新收集暴露面信息 ' + str(
                 num1) + ' 个,其中状态码为200的如下' + '\n' + '-----------------------------------------------' + '\n' + '网址           ' + '    状态码    ' + '     标题      '
             message = ''
             for msg in i:
@@ -1217,8 +1218,8 @@ if __name__ == '__main__':
     file_filter_name = ''
     global httpx_info
     httpx_info = []
-    global tag
-    tag = ''
+    global dingding_tag
+    dingding_tag = ''
 
     c_len = cf.options('hunter')
     for i in c_len:
@@ -1238,7 +1239,7 @@ if __name__ == '__main__':
     x_auth_token = cf.get('tyz', 'x-auth-token')
     black = cf.get('black_domain', 'domain')
     black_domian = black.split(',')
-    tag = cf.get('tag','tag')
+    dingding_tag = cf.get('tag','dingding_tag')
     # 所有搜集到的URL列表
     all_url_list = []
 
