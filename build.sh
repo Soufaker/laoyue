@@ -3,6 +3,7 @@ git clone https://github.com/maurosoria/dirsearch.git ./inifile/dirsearch-master
 chmod 777 ./inifile/lousao/nuclei
 chmod 777 ./inifile/naabu/naabu
 chmod 777 ./inifile/httpx/httpx
+chmod 777 ./inifile/lousao/fscan
 #cp ./inifile/lousao/nuclei-templates/ /root/
 #sudo apt-get install yum
 #yum  -y install mlocate;updatedb
