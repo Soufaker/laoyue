@@ -821,11 +821,12 @@ def quchong_info_list(all_info_list):
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
 
+        if fs == True:
+            fs_list = fscan(port_file_name, ip_list)
+
         if ld == True:
             ld_list = nuclei(file_filter_name)
 
-        if fs == True:
-            fs_list = fscan(file_filter_name)
 
     print('==============================')
     # print(mgwj_list)
