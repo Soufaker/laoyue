@@ -716,7 +716,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         # awvs
         scan_awvs(file_list)
 
-        return new_filename_filter_name,httpx_filename
+        return new_filename_filter_name
     except Exception as e:
         traceback.print_exc()
         print(e)
@@ -745,7 +745,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                         caches_file.write(l + '\n')
                         caches_file_list_1.write(l + '\n')
 
-        return filename_filter_name,httpx_filename
+        return filename_filter_name
 
 
 def scan_awvs(file_list):
@@ -782,7 +782,7 @@ def quchong_info_list(all_info_list):
                 except:
                     continue
 
-        file_filter_name,port_file_name = httpx_naabu_scan(filename, sm_cache_file_list)
+        file_filter_name = httpx_naabu_scan(filename, sm_cache_file_list)
         print('ssss')
         print(file_filter_name)
         print('xxxxx')
@@ -792,7 +792,7 @@ def quchong_info_list(all_info_list):
 
 
         if fs == True:
-            fs_list = fscan(port_file_name,ip_list)
+            fs_list = fscan(file_filter_name,ip_list)
 
         if ld == True:
             ld_list = nuclei(file_filter_name)
@@ -821,12 +821,11 @@ def quchong_info_list(all_info_list):
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
 
-        if fs == True:
-            fs_list = fscan(port_file_name, ip_list)
-
         if ld == True:
             ld_list = nuclei(file_filter_name)
 
+        if fs == True:
+            fs_list = fscan(file_filter_name)
 
     print('==============================')
     # print(mgwj_list)

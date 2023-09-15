@@ -89,13 +89,16 @@ def add_target(add_list1,description='AUTO'):
             if int(scan_num) < int(scan_count):
                 monitor_time_scans()
                 add_url = add_list1.pop(0)
-                if '_' not in add_url:
-                    target_scan(add_url, target_id_list.pop(0)['targets'][0]['target_id'])
-                    # 将已经扫描的数据丢入缓存
-                    caches_file = open('./result/awvslist/cache.txt', 'a', encoding='utf-8')
-                    caches_file.write(add_url + '\n')
-                    caches_file.close()
-                    time.sleep(10)
+                try:
+                    if '_' not in add_url:
+                        target_scan(add_url, target_id_list.pop(0)['targets'][0]['target_id'])
+                        # 将已经扫描的数据丢入缓存
+                        caches_file = open('./result/awvslist/cache.txt', 'a', encoding='utf-8')
+                        caches_file.write(add_url + '\n')
+                        caches_file.close()
+                        time.sleep(10)
+                except:
+                    continue
             else:
                 print('当前运行的扫描任务数量已上限!')
                 time.sleep(10)
