@@ -1051,24 +1051,24 @@ def fscan(filename,ip_list):
                     list1.append(t.strip('\n'))
     except:
         print('无漏洞')
-    try:
-        with open(loud_file, 'r') as f:
-            print(loud_file)
-            test1 = f.readlines()
-            for t in test1:
-                if '[*]' in t and 'alive ports' not in t:
-                    list1.append(t.strip('\n'))
-    except:
-        print('无漏洞!')
-    try:
-        with open(loud_file2, 'r') as f:
-            print(loud_file2)
-            test1 = f.readlines()
-            for t in test1:
-                if '[*]' in t and 'alive ports' not in t:
-                    list1.append(t.strip('\n'))
-    except:
-        print('无漏洞!')
+    # try:
+    #     with open(loud_file, 'r') as f:
+    #         print(loud_file)
+    #         test1 = f.readlines()
+    #         for t in test1:
+    #             if '[*]' in t and 'alive ports' not in t:
+    #                 list1.append(t.strip('\n'))
+    # except:
+    #     print('无漏洞!')
+    # try:
+    #     with open(loud_file2, 'r') as f:
+    #         print(loud_file2)
+    #         test1 = f.readlines()
+    #         for t in test1:
+    #             if '[*]' in t and 'alive ports' not in t:
+    #                 list1.append(t.strip('\n'))
+    # except:
+    #     print('无漏洞!')
 
     print(list1)
     return list1
