@@ -825,7 +825,7 @@ def quchong_info_list(all_info_list):
             ld_list = nuclei(file_filter_name)
 
         if fs == True:
-            fs_list = fscan(file_filter_name)
+            fs_list = fscan(file_filter_name,ip_list)
 
     print('==============================')
     # print(mgwj_list)
