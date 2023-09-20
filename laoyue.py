@@ -828,7 +828,7 @@ def quchong_info_list(all_info_list):
                     temp_list.append(a1.split('/')[0])
                 else:
                     temp_list.append(a1)
-                    
+
             except:
                 if 'http:' not in a and 'htts:' not in a:
                     if ':' in a:
@@ -839,11 +839,11 @@ def quchong_info_list(all_info_list):
                         temp_list.append(a)
                 continue
         temp_list2 = list(set(temp_list))
-        
+
         with open(new_filename, 'w', encoding='utf-8') as f:
             for s in temp_list2:
                 f.writelines(s+'\n')
-                
+
         file_filter_name = httpx_naabu_scan(new_filename, sm_cache_file_list)
         print('ssss')
         print(file_filter_name)
@@ -869,7 +869,7 @@ def quchong_info_list(all_info_list):
 def ml_sm(filename):
     dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
     os.system('python3 ./inifile/dirsearch-master/dirsearch.py  -l' + str(
-        filename) + ' -w ./inifile/dict/file_top_200.txt  -o ' + dir_file)
+        filename) + ' -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + dir_file)
     list1 = []
     list2 = []
     #返回的字节长度列表
