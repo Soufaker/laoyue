@@ -1346,5 +1346,5 @@ if __name__ == '__main__':
             print('发送消息异常')
             os.system('nohup python3 laoyue.py  -d "SRC.txt" -z -f -n -m &')
     if notauto != True:
-        time.sleep(3600)
+        time.sleep(360)
         os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -f -m &')
