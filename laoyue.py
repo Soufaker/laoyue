@@ -772,15 +772,26 @@ def quchong_info_list(all_info_list):
     add_list = list(set(add_list))
     if len(add_list) != 0:
         filename = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'all_url_list.txt'
+        temp_list = []
+        for a in add_list:
+            if len(a) < 4:
+                continue
+            print('1' + a)
+            try:
+                a1 = a.split('://')[1]
+                print(a1)
+                if ':' in a1:
+                    a1 = a1.split(':')[0]
+                if '/' in a1:
+                    temp_list.append(a1.split('/')[0])
+                else:
+                    temp_list.append(a1)
+            except:
+                continue
+        temp_list2 = list(set(temp_list))
         with open(filename, 'w', encoding='utf-8') as f:
-            for a in add_list:
-                print('1' + a)
-                try:
-                    a1 = a.split('://')[1]
-                    print(a1)
-                    f.writelines(a1 + '\n')
-                except:
-                    continue
+            for s in temp_list2:
+                f.writelines(s+'\n')
 
         file_filter_name = httpx_naabu_scan(filename, sm_cache_file_list)
         print('ssss')
@@ -803,17 +814,36 @@ def quchong_info_list(all_info_list):
         filename = './result/notautolist/notautolist.txt'
         new_filename = './result/notautolist/'+str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))+'new_notautolist.txt'
         add_list = open(filename, 'r', encoding='utf-8').read().split('\n')
+        temp_list = []
+        for a in add_list:
+            if len(a) < 4:
+                continue
+            print('1' + a)
+            try:
+                a1 = a.split('://')[1]
+                print(a1)
+                if ':' in a1:
+                    a1 = a1.split(':')[0]
+                if '/' in a1:
+                    temp_list.append(a1.split('/')[0])
+                else:
+                    temp_list.append(a1)
+                    
+            except:
+                if 'http:' not in a and 'htts:' not in a:
+                    if ':' in a:
+                        a = a.split(':')[0]
+                    if '/' in a:
+                        temp_list.append(a.split('/')[0])
+                    else:
+                        temp_list.append(a)
+                continue
+        temp_list2 = list(set(temp_list))
+        
         with open(new_filename, 'w', encoding='utf-8') as f:
-            for a in add_list:
-                print('1' + a)
-                try:
-                    a1 = a.split('://')[1]
-                    print(a1)
-                    f.writelines(a1 + '\n')
-                except:
-                    if 'http:' not in a and 'htts:' not in a:
-                        f.writelines(a + '\n')
-                    continue
+            for s in temp_list2:
+                f.writelines(s+'\n')
+                
         file_filter_name = httpx_naabu_scan(new_filename, sm_cache_file_list)
         print('ssss')
         print(file_filter_name)
@@ -1316,5 +1346,5 @@ if __name__ == '__main__':
             print('发送消息异常')
             os.system('nohup python3 laoyue.py  -d "SRC.txt" -z -f -n -m &')
     if notauto != True:
-        time.sleep(360)
+        time.sleep(3600)
         os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -f -m &')
