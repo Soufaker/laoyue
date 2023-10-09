@@ -666,12 +666,13 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         os.system(port_scan)  # &> /dev/null
         httpx_filename = filename_temp[0:-4] + '_httpx.txt'
         http_list = open(filename_temp, 'r', encoding='utf-8')
+        print('123'+httpx_filename)
         with open(httpx_filename, 'w+') as f:
             for h in http_list:
                 print(h)
                 f.writelines('https://' + h)
                 f.writelines('http://' + h)
-        http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -mc 200,401,403,404,302,301  -title  -tech-detect -status-code -timeout 1 -threads 50  -o  ' + filename_filter_name  # &> /dev/null'
+        http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -mc 200,401,403,404,302,301  -title   -status-code  -fr -o  ' + filename_filter_name  # &> /dev/null'
         print('1 ' + http_scan)
         os.system(http_scan)  # &> /dev/null
         # os.system('rm -rf ' + filename)
@@ -682,9 +683,13 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                 info = []
                 f = i.split(' ')
                 info.append(str(f[0]))
-                info.append(str(f[1].split('\x1b')[1].split('m')[1]))
+                if '200' in f[1]:
+                    info.append('200')
+                else:
+                    info.append(str(f[1].split('\x1b')[1].split('m')[1]))
                 info.append(str(f[2].split('\x1b')[1][4:]))
                 httpx_info.append(info)
+                print(info)
         print(httpx_info)
 
         #
@@ -867,42 +872,46 @@ def quchong_info_list(all_info_list):
 
 
 def ml_sm(filename):
-    dir_file = './result/mgml/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'dir_scan.txt'
-    os.system('python3 ./inifile/dirsearch-master/dirsearch.py  -l' + str(
-        filename) + ' -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + dir_file)
-    list1 = []
-    list2 = []
-    #返回的字节长度列表
-    msg_info = []
-    try:
-        with open(dir_file, 'r') as f:
-            print(dir_file)
-            test1 = f.readlines()
-            for t in test1:
-                msg_info.append(t[0])
-            for t in test1:
-                if t[0] != '#' and t[0] != '\n' and '3KB' not in t and '3B' not in t and '2KB' not in t and '1KB' not in t and '7KB' not in t and msg_info.count(t[0]) < 10:
-                    list1.append(t.strip('\n'))
-    except Exception as e:
-        print('该地址无敏感目录',e)
-        return list2
+    url_list = open(filename, 'r', encoding='utf-8').read().split('\n')
+    # 返回的字节长度列表
+    result = []
 
-    print(list1)
-    if len(list1) != 0:
-        for i in list1:
-            info = []
-            a = re.match(r'[0-9][0-9][0-9]', i)
-            b = re.match(r'\s*[0-9]*(KB|B|M|)', i[3:])
-            c = i.index('http')
-            code = a.group().replace(' ', '')
-            size = b.group().replace(' ', '')
-            url = i[c:]
-            info.append(url)
-            info.append(code)
-            info.append(size)
-            list2.append(info)
+    for url in url_list:
+        msg_info = []
+        print(url)
+        if 'http' in url:
+            temp_file = 'temp_result.txt'
+            print('./inifile/ffuf/ffuf -u ' + url + 'FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
+            os.system('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
 
-    return list2
+        else:
+            continue
+
+
+        with open(temp_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)['results']
+            f.close()
+
+        #删除临时文件
+        os.system('rm -rf '+temp_file)
+        print(data)
+
+        # 存放返回包长度
+        for i in range(len(data)):
+            msg_info.append(data[i]['length'])
+        print(msg_info)
+
+        for i in range(len(data)):
+            info_list = []
+            if msg_info.count(data[i]['length']) < 5:
+                info_list.append(data[i]['url'])
+                info_list.append(data[i]['status'])
+                info_list.append(data[i]['length'])
+                result.append(info_list)
+            else:
+                print('1')
+
+    return result
 
 
 def dingtalk(message_list, mgml_list, ld_list, fs_list):
@@ -999,10 +1008,10 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
             xuhao = 1
             message = ''
             title = dingding_tag+':新收集敏感信息 ' + str(
-                num2) + ' 个,其中返回为200且大于1KB的如下' + '\n' + '-----------------------------------------------'
+                num2) + ' 个,其中返回为200的如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
-                if str(msg[1]) != '200' or 'KB' not in str(msg[2]):
+                if str(msg[1]) != '200':
                     continue
                 info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2])
                 message = message + str(xuhao) + '.' + str(info) + '\n'
