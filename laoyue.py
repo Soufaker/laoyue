@@ -665,7 +665,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         print('2 ' + port_scan)
         os.system(port_scan)  # &> /dev/null
         httpx_filename = filename_temp[0:-4] + '_httpx.txt'
-        http_list = open(filename_temp, 'r', encoding='utf-8')
+        http_list = open(filename_temp, 'r')
         print('123'+httpx_filename)
         with open(httpx_filename, 'w+') as f:
             for h in http_list:
@@ -677,7 +677,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         os.system(http_scan)  # &> /dev/null
         # os.system('rm -rf ' + filename)
         # os.system('rm -rf ' + filename_temp)
-        httpx_info_list = open(filename_filter_name, 'r', encoding='utf-8').read().split('\n')
+        httpx_info_list = open(filename_filter_name, 'r').read().split('\n')
         for i in httpx_info_list:
             if i not in caches_file_list and i != '':
                 info = []
