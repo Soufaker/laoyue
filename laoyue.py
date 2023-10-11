@@ -879,37 +879,40 @@ def ml_sm(filename):
     for url in url_list:
         msg_info = []
         print(url)
-        if 'http' in url:
-            temp_file = 'temp_result.txt'
-            print('./inifile/ffuf/ffuf -u ' + url + 'FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
-            os.system('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
+        try:
+            if 'http' in url:
+                temp_file = 'temp_result.txt'
+                print('./inifile/ffuf/ffuf -u ' + url + 'FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
+                os.system('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
 
-        else:
-            continue
-
-
-        with open(temp_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)['results']
-            f.close()
-
-        #删除临时文件
-        os.system('rm -rf '+temp_file)
-        print(data)
-
-        # 存放返回包长度
-        for i in range(len(data)):
-            msg_info.append(data[i]['length'])
-        print(msg_info)
-
-        for i in range(len(data)):
-            info_list = []
-            if msg_info.count(data[i]['length']) < 5:
-                info_list.append(data[i]['url'])
-                info_list.append(data[i]['status'])
-                info_list.append(data[i]['length'])
-                result.append(info_list)
             else:
-                print('1')
+                continue
+
+
+            with open(temp_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)['results']
+                f.close()
+
+            #删除临时文件
+            os.system('rm -rf '+temp_file)
+            print(data)
+
+            # 存放返回包长度
+            for i in range(len(data)):
+                msg_info.append(data[i]['length'])
+            print(msg_info)
+
+            for i in range(len(data)):
+                info_list = []
+                if msg_info.count(data[i]['length']) < 5:
+                    info_list.append(data[i]['url'])
+                    info_list.append(data[i]['status'])
+                    info_list.append(data[i]['length'])
+                    result.append(info_list)
+                else:
+                    print('1')
+        except:
+            continue
 
     return result
 
