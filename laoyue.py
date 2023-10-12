@@ -899,12 +899,12 @@ def ml_sm(filename):
 
             # 存放返回包长度
             for i in range(len(data)):
-                msg_info.append(data[i]['length'])
+                msg_info.append(data[i]['words'])
             print(msg_info)
 
             for i in range(len(data)):
                 info_list = []
-                if msg_info.count(data[i]['length']) < 5:
+                if msg_info.count(data[i]['words']) < 4 and data[i]['words'] > 10:
                     info_list.append(data[i]['url'])
                     info_list.append(data[i]['status'])
                     info_list.append(data[i]['length'])
@@ -1356,7 +1356,7 @@ if __name__ == '__main__':
             dingtalk(set_info, mgwj_list, ld_list,fs_list)
         except:
             print('发送消息异常')
-            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z -f -n -m &')
+            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z -f -n -m -a &')
     if notauto != True:
-        time.sleep(360)
-        os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -f -m &')
+        time.sleep(3600)
+        os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -f -m  -a &')
