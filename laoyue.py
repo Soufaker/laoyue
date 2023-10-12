@@ -395,15 +395,17 @@ def get_title(url):
 
 def isCDN(domain, ip):  # 判断目标是否存在CDN
     parm = 'nslookup ' + domain
-    result = os.popen(parm).read()
-    l = result.split('Name:')
-    if result.count("Name") > 1 or domain not in l[1]:
-        return "存在CDN" + str(ip)
-    else:
-        if ip not in ip_list:
-            ip_list.append(ip)
-        return ip
-
+    try:
+        result = os.popen(parm).read()
+        l = result.split('Name:')
+        if result.count("Name") > 1 or domain not in l[1]:
+            return "存在CDN" + str(ip)
+        else:
+            if ip not in ip_list:
+                ip_list.append(ip)
+            return ip
+    except:
+        return '-'
 
 def fy_list(list1, count):
     new_list = []
