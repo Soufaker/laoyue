@@ -342,8 +342,8 @@ def yt_info(url):
 
 
 def yt_get_info(name_list):
-    try:
-        for name in name_list:
+    for name in name_list:
+        try:
             if name == '':
                 continue
             if isIP(name):
@@ -379,8 +379,10 @@ def yt_get_info(name_list):
                 if pd_num == 2:
                     print('未查到数据')
                 break
-    except Exception as e:
-        print('出异常了', e)
+        except Exception as e:
+            traceback.print_exc()
+            continue
+            print('出异常了', e)
 
 
 def get_title(url):
