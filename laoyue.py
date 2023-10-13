@@ -908,10 +908,10 @@ def ml_sm(filename):
 
             for i in range(len(data)):
                 info_list = []
-                if msg_info.count(data[i]['words']) < 4 and data[i]['words'] > 10:
+                if msg_info.count(data[i]['words']) == 1 and data[i]['words'] > 10:
                     info_list.append(data[i]['url'])
                     info_list.append(data[i]['status'])
-                    info_list.append(data[i]['length'])
+                    info_list.append(data[i]['words'])
                     result.append(info_list)
                 else:
                     print('1')
