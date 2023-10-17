@@ -1,0 +1,51 @@
+http:
+  allow_methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - COPY
+    - MOVE
+    - DELETE
+    - TRACE
+    - OPTIONS
+    - CONNECT
+    - LABEL
+  headers:
+    - Client-IP
+    - Forwarded
+    - Forwarded-For
+    - Forwarded-For-Ip
+    - True-Client-IP
+    - X-Client-IP
+    - X-Custom-IP-Authorization
+    - X-Forward
+    - X-Forward-For
+    - X-Forwarded
+    - X-Forwarded-By
+    - X-Forwarded-For
+    - X-Forwarded-For-Original
+    - X-Forwarded-Host
+    - X-Forwarded-Server
+    - X-Host
+    - X-HTTP-Host-Override
+    - X-Originating-IP
+    - X-Real-IP
+    - X-Remote-Addr
+    - X-Remote-IP
+    - X-SSL-Client-IP
+  end_path: #like http://www.baidu.com/abc ---> http://www.baidu.com/abcend_path
+    - "/?"
+    - "/??"
+    - "/.."
+    - "/./"
+    - "/%20"
+    - "/%09"
+    - "/%0a"
+    - "/#"
+  mid_path: #like http://www.baidu.com/abc/ --->    http://www.baidu.com/mid_dpath/abc/
+    - "."
+    - "..;"
+    - ".;"
+    - ";/"
+    - "/;/"
