@@ -412,7 +412,6 @@ def isCDN(domain, ip):  # 判断目标是否存在CDN
 def fy_list(list1, count):
     new_list = []
     num = len(list1)
-    print(list1)
     if int(num) > int(count):
         n = num // int(count)
     else:
@@ -426,13 +425,11 @@ def fy_list(list1, count):
 
 def get_fofa_url(domain_l):
     new_list = fy_list(domain_l, fofa_count)
-    print(new_list)
     while True:
         for domain_list in new_list:
             try:
                 domain_all = ''
                 for domain in domain_list:
-                    print('11')
                     if domain != '':
                         if isIP(domain):
                             domain_all = domain_all + "ip=" + domain + '||'
@@ -613,8 +610,8 @@ def save_cache(target_list):
     sm_add_list = []
     # 读取历史扫描信息
     sm_cache_file_list = open('./caches/sm_cache.txt', 'r', encoding='utf-8').read().split('\n')
-    print('target', target_list)
-    print('sm', sm_cache_file_list)
+    #print('target', target_list)
+    #print('sm', sm_cache_file_list)
     # 添加fafa_yt记录的历史域名信息
     if len(target_list) != 0:
         for tar in target_list:
@@ -647,17 +644,17 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
     caches_file = open('./caches/sm_cache.txt', 'a', encoding='utf-8')
     try:
         file_list2 = open(filename, 'r', encoding='utf-8').read().split('\n')
-        print('-------------')
-        print(file_list2)
+        #print('-------------')
+        #print(file_list2)
         filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'temp_port.txt'
         temp_l = open(filename, 'r', encoding='utf-8').read().split('\n')
-        print(temp_l)
+        #print(temp_l)
         new_filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()) + 'new_temp_port.txt'
         with open(new_filename_temp, 'w') as f:
             for i in temp_l:
                 if ':' in i:
-                    print('123')
-                    print(i.split(':')[0])
+                    #print('123')
+                    #print(i.split(':')[0])
                     f.writelines(i.split(':')[0] + '\n')
                 else:
                     f.writelines(i+ '\n')
@@ -666,18 +663,18 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                                                                   time.localtime()) + 'all_url_list.txt'
 
         port_scan = './inifile/naabu/naabu  -l ' + new_filename_temp + ' -top-ports 1000 -o ' + filename_temp
-        print('2 ' + port_scan)
+        #print('2 ' + port_scan)
         os.system(port_scan)  # &> /dev/null
         httpx_filename = filename_temp[0:-4] + '_httpx.txt'
         http_list = open(filename_temp, 'r')
-        print('123'+httpx_filename)
+        #print('123'+httpx_filename)
         with open(httpx_filename, 'w+') as f:
             for h in http_list:
-                print(h)
+                #print(h)
                 f.writelines('https://' + h)
                 f.writelines('http://' + h)
         http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -mc 200,401,403,404,302,301  -title   -status-code  -fr -o  ' + filename_filter_name  # &> /dev/null'
-        print('1 ' + http_scan)
+        #print('1 ' + http_scan)
         os.system(http_scan)  # &> /dev/null
         # os.system('rm -rf ' + filename)
         # os.system('rm -rf ' + filename_temp)
@@ -874,6 +871,31 @@ def quchong_info_list(all_info_list):
     print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
     return yt_fofa_info_list, mgwj_list, ld_list,fs_list
 
+def bypass403(mg_url):
+    os.system('./inifile/bypass403/f403_linux_amd64 -u ' + mg_url + '> temp.txt')
+    l = open('./inifile/bypass403/temp.txt', 'r', encoding='utf-8').read().split('\n')
+    l2 = []
+    for i in l:
+        print(i)
+        if '[*]' in i or '[+]' in i:
+            l2.append(i)
+
+    pass_url_list = []
+    for i in range(0, len(l2)):
+        print(l2[i])
+        if '[+]' in l2[i]:
+            info = []
+            url = l2[i].split(' ')[3].split('\x1b')[0] + '==>' + \
+                  l2[i - 1].replace(' ', '').split('[*]')[1].split('\x1b')[0]
+            code = l2[i].split(' ')[1]
+            words = l2[i].split(' ')[2]
+            info.append(url)
+            info.append(code)
+            info.append(words)
+            pass_url_list.append(info)
+
+    os.system('rm -rf ./inifile/bypass403/temp.txt')
+    return pass_url_list
 
 def ml_sm(filename):
     url_list = open(filename, 'r', encoding='utf-8').read().split('\n')
@@ -886,7 +908,7 @@ def ml_sm(filename):
         try:
             if 'http' in url:
                 temp_file = 'temp_result.txt'
-                print('./inifile/ffuf/ffuf -u ' + url + 'FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
+                print('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
                 os.system('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
 
             else:
@@ -899,22 +921,29 @@ def ml_sm(filename):
 
             #删除临时文件
             os.system('rm -rf '+temp_file)
-            print(data)
+            #print(data)
 
             # 存放返回包长度
             for i in range(len(data)):
-                msg_info.append(data[i]['words'])
-            print(msg_info)
+                msg_info.append(str(data[i]['url'].split('.')[-2]+'.'+data[i]['url'].split('.')[-1]) + str(data[i]['words']))
+            #print(msg_info)
 
             for i in range(len(data)):
                 info_list = []
-                if msg_info.count(data[i]['words']) == 1 and data[i]['words'] > 10:
+                if msg_info.count(str(data[i]['url'].split('.')[-2]+'.'+data[i]['url'].split('.')[-1]) + str(data[i]['words'])) == 1 and data[i]['words'] > 10:
                     info_list.append(data[i]['url'])
                     info_list.append(data[i]['status'])
                     info_list.append(data[i]['words'])
                     result.append(info_list)
                 else:
                     print('1')
+
+                #对扫描的403,401页面进行bypass扫描
+                if data[i]['status'] == 403 or data[i]['status'] == 401:
+                    l = bypass403(data[i]['url'])
+                    if len(l) != 0:
+                        for i in l:
+                            result.append(i)
         except:
             continue
 
@@ -1303,6 +1332,7 @@ if __name__ == '__main__':
     quchong_list = []
     mgwj_list = []
     ld_list = []
+    fs_list = []
     global ip_list
     ip_list = []
 
@@ -1360,6 +1390,7 @@ if __name__ == '__main__':
             dingtalk(set_info, mgwj_list, ld_list,fs_list)
         except:
             print('发送消息异常')
+            traceback.print_exc()
             os.system('nohup python3 laoyue.py  -d "SRC.txt" -z -f -n -m -a &')
     if notauto != True:
         time.sleep(3600)
