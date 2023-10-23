@@ -702,7 +702,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         for f in httpx_info:
             file_list.append(f[0])
         print(file_list)
-        print(sm_cache_file_list)
+        #print(sm_cache_file_list)
         for l in file_list:
             if 'http' not in l:
                 l1 = 'http://' + l
@@ -925,12 +925,12 @@ def ml_sm(filename):
 
             # 存放返回包长度
             for i in range(len(data)):
-                msg_info.append(str(data[i]['url'].split('.')[-2]+'.'+data[i]['url'].split('.')[-1]) + str(data[i]['words']))
+                msg_info.append(str(tldextract.extract(data[i]['url']).registered_domain) + str(data[i]['words']))
             #print(msg_info)
 
             for i in range(len(data)):
                 info_list = []
-                if msg_info.count(str(data[i]['url'].split('.')[-2]+'.'+data[i]['url'].split('.')[-1]) + str(data[i]['words'])) == 1 and data[i]['words'] > 10:
+                if msg_info.count(str(tldextract.extract(data[i]['url']).registered_domain) + str(data[i]['words'])) == 1 and data[i]['words'] > 10:
                     info_list.append(data[i]['url'])
                     info_list.append(data[i]['status'])
                     info_list.append(data[i]['words'])
@@ -1103,7 +1103,8 @@ def fscan(filename,ip_list):
             if ip not in l:
                 f.writelines(ip + '\n')
     os.system('./inifile/lousao/fscan  -uf ' + filename + ' -o ' + str(loud_file))
-    os.system('./inifile/lousao/fscan  -p 22,3389,445,3306,1433,1521,21,27017,11211,5432,23,25,465,110,995,143,993,5900,6379 -np -hf ' + url_file + ' -o ' + str(loud_file2))
+    #os.system('./inifile/lousao/fscan  -p 22,3389,445,3306,1433,1521,21,27017,11211,5432,23,25,465,110,995,143,993,5900,6379 -np -hf ' + url_file + ' -o ' + str(loud_file2))
+    os.system('./inifile/lousao/fscan  -np -hf ' + url_file + ' -o ' + str(loud_file2))
     list1 = []
     with open('./result/allip/ip_cache.txt','a') as f:
         for ip in ip_list:
