@@ -678,7 +678,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         os.system(http_scan)  # &> /dev/null
         # os.system('rm -rf ' + filename)
         # os.system('rm -rf ' + filename_temp)
-        httpx_info_list = open(filename_filter_name, 'r').read().split('\n')
+        httpx_info_list = open(filename_filter_name, 'r', encoding='utf-8', errors='ignore').read().split('\n')
         for i in httpx_info_list:
             if i not in caches_file_list and i != '':
                 info = []
@@ -898,18 +898,19 @@ def bypass403(mg_url):
     return pass_url_list
 
 def ml_sm(filename):
-    url_list = open(filename, 'r', encoding='utf-8').read().split('\n')
+    url_list = open(filename, 'r', encoding='utf-8', errors='ignore').read().split('\n')
     # 返回的字节长度列表
     result = []
 
     for url in url_list:
         msg_info = []
+        msg_info2 = []
         print(url)
         try:
             if 'http' in url:
                 temp_file = 'temp_result.txt'
-                print('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
-                os.system('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt  -t 100 -o ' + temp_file)
+                print('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt -ac -t 100 -o ' + temp_file)
+                os.system('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt -ac -t 100 -o ' + temp_file)
 
             else:
                 continue
@@ -926,11 +927,13 @@ def ml_sm(filename):
             # 存放返回包长度
             for i in range(len(data)):
                 msg_info.append(str(tldextract.extract(data[i]['url']).registered_domain) + str(data[i]['words']))
+            for i in range(len(data)):
+                msg_info2.append(str(data[i]['words']))
             #print(msg_info)
 
             for i in range(len(data)):
                 info_list = []
-                if msg_info.count(str(tldextract.extract(data[i]['url']).registered_domain) + str(data[i]['words'])) == 1 and data[i]['words'] > 10:
+                if msg_info.count(str(tldextract.extract(data[i]['url']).registered_domain) + str(data[i]['words'])) == 1 and data[i]['words'] > 100 and msg_info2.count(str(data[i]['words'])) < 4 :
                     info_list.append(data[i]['url'])
                     info_list.append(data[i]['status'])
                     info_list.append(data[i]['words'])
@@ -1392,7 +1395,7 @@ if __name__ == '__main__':
         except:
             print('发送消息异常')
             traceback.print_exc()
-            os.system('nohup python3 laoyue.py  -d "SRC.txt" -z -f -n -m -a &')
+            os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &')
     if notauto != True:
         time.sleep(3600)
-        os.system('nohup python3 laoyue.py  -d "SRC.txt" -z  -n -f -m  -a &')
+        os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &')
