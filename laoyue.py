@@ -678,7 +678,8 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         os.system(http_scan)  # &> /dev/null
         # os.system('rm -rf ' + filename)
         # os.system('rm -rf ' + filename_temp)
-        httpx_info_list = open(filename_filter_name, 'r', encoding='utf-8', errors='ignore').read().split('\n')
+        httpx_info_l = open(filename_filter_name, 'r', encoding='utf-8', errors='ignore').read().split('\n')
+        httpx_info_list = list(set(httpx_info_l))
         for i in httpx_info_list:
             if i not in caches_file_list and i != '':
                 info = []
@@ -700,7 +701,8 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         # 写入awvs文件
         file_list = []
         for f in httpx_info:
-            file_list.append(f[0])
+            if f[0] not in file_list:
+                file_list.append(f[0])
         print(file_list)
         #print(sm_cache_file_list)
         for l in file_list:
@@ -1395,7 +1397,6 @@ if __name__ == '__main__':
         except:
             print('发送消息异常')
             traceback.print_exc()
-            os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &')
+            os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &> /dev/null')
     if notauto != True:
-        time.sleep(3600)
-        os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &')
+        os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &> /dev/null')
