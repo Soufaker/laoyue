@@ -342,14 +342,18 @@ def yt_info(url):
 
 
 def yt_get_info(name_list):
-    for name in name_list:
+    new_list = fy_list(name_list, 5)
+    for domain_list in new_list:
         try:
-            if name == '':
-                continue
-            if isIP(name):
-                search_key = '(ip=' + name + ')' + str(yt_keword)
-            else:
-                search_key = '(domain=' + name + ')' + str(yt_keword)
+            domain_all = ''
+            for domain in domain_list:
+                if domain != '':
+                    if isIP(domain):
+                        domain_all = domain_all + "ip=" + domain + '||'
+                    else:
+                        domain_all = domain_all + "domain=" + domain + '||'
+            print(domain_all)
+            search_key = '(' + domain_all[0:-2] + ')' + str(fofa_keyword)
             keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
             page = 1
             api_num = 0
@@ -357,7 +361,7 @@ def yt_get_info(name_list):
                 # 测试第一个API积分是否够用
                 url = "https://hunter.qianxin.com/openApi/search?api-key={}&search={}&page={}&page_size=1&is_web=1".format(
                     hunter_config_list[api_num], keyword.decode(), page)
-                r = requests.get(url, timeout=30)
+                r = requests.get(url)
                 res = json.loads(r.text)
 
                 if str(res['code']) == '429':
@@ -381,8 +385,8 @@ def yt_get_info(name_list):
                 break
         except Exception as e:
             traceback.print_exc()
-            continue
-            print('出异常了', e)
+            print('积分清0退出循环', e)
+            break
 
 
 def get_title(url):
@@ -1399,6 +1403,12 @@ if __name__ == '__main__':
         except:
             print('发送消息异常')
             traceback.print_exc()
-            os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &> /dev/null &')
+            time.sleep(60)
+            try:
+                dingtalk(set_info, mgwj_list, ld_list, fs_list)
+            except:
+                print('网络存在问题,继续执行任务')
+
     if notauto != True:
-        os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &> /dev/null &')
+        time.sleep(360)
+        os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &')
