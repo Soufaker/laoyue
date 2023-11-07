@@ -1155,6 +1155,8 @@ def fscan(filename,ip_list):
     return list1
 
 def nuclei(filename):
+    os.system('./inifile/lousao/nuclei -update')
+    os.system('./inifile/lousao/nuclei -update-templates ')
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
     # os.system('./inifile/lousao/nuclei -un -ut')
     os.system('./inifile/lousao/nuclei -mhe 3 -timeout 1 -rl 300 -c 50 -as -s low,medium,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
@@ -1397,6 +1399,6 @@ if __name__ == '__main__':
         except:
             print('发送消息异常')
             traceback.print_exc()
-            os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &> /dev/null')
+            os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &> /dev/null &')
     if notauto != True:
-        os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &> /dev/null')
+        os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &> /dev/null &')
