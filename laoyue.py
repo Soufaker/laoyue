@@ -624,8 +624,8 @@ def save_cache(target_list):
                 if str(tar[5]) == '200' or str(tar[5]) == '301' or str(tar[5]) == '302' or str(tar[5]) == '201' or str(tar[5]) == '404' or str(tar[5]) == '401' or str(tar[5]) == '405':
                     info = []
                     info.append(str(tar[0]))
-                    info.append(str(tar[3]))
                     info.append(str(tar[5]))
+                    info.append(str(tar[3]))
                     httpx_info.append(info)
 
                 sm_add_list.append(tar[0])
