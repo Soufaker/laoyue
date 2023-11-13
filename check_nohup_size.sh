@@ -5,7 +5,7 @@ file_path="./nohup.out"
 while true; do
     if [ -f "$file_path" ]; then
         initial_size=$(du -s "$file_path" | cut -f1)
-        sleep 3600*3
+        sleep 7200
 
         current_size=$(du -s "$file_path" | cut -f1)
 
