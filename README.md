@@ -78,6 +78,14 @@
 
 `nohup python3 laoyue.py -d "SRC.txt" -m  -n -z -a -f `&
 
+
+
+11.新增自动化定时检测是否卡死的功能代码,请在执行上述自动化指令后手动执行该代码(运行该命令之前,请先运行build.sh文件或者手动在shell执行命令:sed -i "s/\r//" check_nohup_size.sh,定时检查nohup.out是否变化防止卡死导致自动化停止)
+
+```
+nohup ./check_nohup_size.sh >check_size.out 2>&1 &
+```
+
 # **效果展示**
 
 1.钉钉的信息
