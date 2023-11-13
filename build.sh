@@ -4,6 +4,7 @@ chmod 777 ./inifile/naabu/naabu
 chmod 777 ./inifile/httpx/httpx
 chmod 777 ./inifile/lousao/fscan
 chmod 777 ./inifile/ffuf/ffuf
+sed -i "s/\r//" check_nohup_size.sh
 systemctl enable docker.service
 #cp ./inifile/lousao/nuclei-templates/ /root/
 #sudo apt-get install yum

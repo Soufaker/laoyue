@@ -1379,6 +1379,7 @@ if __name__ == '__main__':
     global x_domain
     x_domain = options.x_domain
 
+
     if zs_domain != True:
         company_id_name_list = Get_Company_Id(company_name, company_list)
         print(company_id_name_list)
@@ -1412,3 +1413,4 @@ if __name__ == '__main__':
     if notauto != True:
         time.sleep(360)
         os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &')
+        # nohup ./check_nohup_size.sh >check_size.out 2>&1 & (运行该命令之前,请先运行build.sh文件或者手动在shell执行命令:sed -i "s/\r//" check_nohup_size.sh,定时检查nohup.out是否变化防止卡死导致自动化停止)
