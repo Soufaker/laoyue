@@ -57,7 +57,7 @@
 6.后台使用直接使用(基于1,3命令组合使用)nohup就行了如下
 
 ```python
- nohup python3 laoyue.py -d "SRC.txt" -m  -n -z  &
+ nohup python3 laoyue.py -d "SRC.txt" -m  -n -z  > laoyue.out 2>&1 &
 ```
 
 7.代码默认跑的自己收集的域名资产循环,如果使用其他命令可以自行更改循环
@@ -66,9 +66,9 @@
 
 8.新增加awvs配合扫描,只需要添加参数-a就行了,也可以单独运行/目前我使用的自动化参数
 
-`nohup python3 laoyue.py -d "SRC.txt" -m  -n -z -a  &`
+`nohup python3 laoyue.py -d "SRC.txt" -m  -n -z -a  > laoyue.out 2>&1 &`
 
-或`nohup python3 awvs_monitor.py >awvsput.out 2>&1 &`
+或`nohup python3 awvs_monitor.py >awvsput.out 2>&1 `
 
 9.如果钉钉配置有问题发不了消息,请设置如下,别自定义关键字,加签就行
 
@@ -76,7 +76,7 @@
 
 10.新增加fscan对收集的真实IP进行扫描播报,只需要添加参数-f就行了,目前我使用的自动化参数
 
-`nohup python3 laoyue.py -d "SRC.txt" -m  -n -z -a -f `&
+`nohup python3 laoyue.py -d "SRC.txt" -m  -n -z -a -f > laoyue.out 2>&1 & `
 
 
 
