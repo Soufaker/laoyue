@@ -1,5 +1,5 @@
 #!/bin/bash
-file_path="./nohup.out"
+file_path="./laoyue.out"
 
 # 检查文件是否存在
 while true; do
@@ -15,6 +15,6 @@ while true; do
             break
         fi
     fi
-    echo "nohup.out文件打不开"
+    echo "laoyue.out文件打不开"
     sleep 360
 done
