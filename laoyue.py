@@ -1412,5 +1412,9 @@ if __name__ == '__main__':
 
     if notauto != True:
         time.sleep(360)
-        os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a &')
+        try:
+            os.system('rm -rf laoyue.out')
+            os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a > laoyue.out 2>&1 &')
+        except:
+            print('laoyue.out文件不存在')
         # nohup ./check_nohup_size.sh >check_size.out 2>&1 & (运行该命令之前,请先运行build.sh文件或者手动在shell执行命令:sed -i "s/\r//" check_nohup_size.sh,定时检查nohup.out是否变化防止卡死导致自动化停止)
