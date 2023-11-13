@@ -1163,7 +1163,7 @@ def nuclei(filename):
     os.system('./inifile/lousao/nuclei -update-templates ')
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
     # os.system('./inifile/lousao/nuclei -un -ut')
-    os.system('./inifile/lousao/nuclei -mhe 3 -timeout 1 -rl 300 -c 50 -as -s low,medium,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
+    os.system('./inifile/lousao/nuclei -mhe 3 -timeout 1 -rl 300 -c 50  -s low,medium,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
     list1 = []
     list2 = []
     try:
