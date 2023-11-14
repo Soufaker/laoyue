@@ -11,10 +11,11 @@ while true; do
 
         if [ "$current_size" == "$initial_size" ]; then
             rm -f "$file_path"
-            nohup python laoyue.py -d "SRC.txt" -z -n -m -f -a &
+            nohup python laoyue.py -d "SRC.txt" -z -n -m -f -a > laoyue.out 2>&1 &
             break
         fi
     fi
+    nohup python laoyue.py -d "SRC.txt" -z -n -m -f -a > laoyue.out 2>&1 &
     echo "laoyue.out文件打不开"
     sleep 360
 done
