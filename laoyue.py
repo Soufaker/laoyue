@@ -1088,9 +1088,9 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
                 num1) + ' 个,其中状态码为200的如下' + '\n' + '-----------------------------------------------' + '\n' + '网址           ' + '    状态码    ' + '     标题      '
             message = ''
             for msg in i:
-                if str(msg[2]) != '200':
+                if str(msg[1]) != '200':
                     continue
-                info = str(msg[0]) + '   ' + str(msg[2]) + '   ' + str(msg[1]) + '   '
+                info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2]) + '   '
                 message = message + str(xuhao) + '.' + str(info) + '\n'
                 xuhao += 1
                 message = title.lstrip() + '\n' + message
