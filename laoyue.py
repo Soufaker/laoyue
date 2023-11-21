@@ -370,7 +370,7 @@ def yt_get_info(name_list):
                     if int(api_num) < int(len(hunter_config_list)):
                         api_num += 1
                     continue
-                if str(res['code']) == '40204':
+                if str(res['code']) == '40204' or str(res['code']) == '40201':
                     if int(api_num) < int(len(hunter_config_list)):
                         api_num += 1
                         print('上一个积分已经用完,切换第' + str(int(api_num) + 1) + '个API')
