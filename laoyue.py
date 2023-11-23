@@ -342,7 +342,7 @@ def yt_info(url):
 
 
 def yt_get_info(name_list):
-    new_list = fy_list(name_list, 5)
+    new_list = fy_list(name_list, hunter_count)
     for domain_list in new_list:
         try:
             domain_all = ''
@@ -1297,6 +1297,8 @@ if __name__ == '__main__':
     yt_keword = ''
     global fofa_count
     fofa_count = ''
+    global hunter_count
+    hunter_count = ''
     global is_fofa
     is_fofa = ''
     global is_hunter
@@ -1313,6 +1315,7 @@ if __name__ == '__main__':
         hunter_config_list.append(cf.get('hunter', i))
     yt_keword = ''
     fofa_count = cf.get('fofa', 'count')
+    hunter_count = cf.get('hunter', 'count')
     fofa_size = cf.get('fofa', 'size')
     is_fofa = cf.get('fofa', 'is_fofa')
     is_hunter = cf.get('hunter', 'is_hunter')
