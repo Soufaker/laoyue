@@ -5,7 +5,7 @@ file_path="./laoyue.out"
 while true; do
     if [ -f "$file_path" ]; then
         initial_size=$(du -s "$file_path" | cut -f1)
-        sleep 14400
+        sleep 36000
 
         current_size=$(du -s "$file_path" | cut -f1)
 
