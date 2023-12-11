@@ -685,9 +685,9 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         httpx_info_l = open(filename_filter_name, 'r', encoding='utf-8', errors='ignore').read().split('\n')
         httpx_info_list = list(set(httpx_info_l))
         for i in httpx_info_list:
-            if i not in caches_file_list and i != '':
+            f = i.split(' ')
+            if str(f[0]) not in caches_file_list and str(f[0]) != '':
                 info = []
-                f = i.split(' ')
                 info.append(str(f[0]))
                 if '200' in f[1]:
                     info.append('200')
