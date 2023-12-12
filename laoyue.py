@@ -1,5 +1,6 @@
-# author:Soufaker
-# time:2023/09/05
+#encoding:utf-8
+#author:Soufaker
+#time:2023/09/05
 import random
 import traceback
 import requests
