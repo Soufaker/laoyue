@@ -1,6 +1,7 @@
-#encoding:utf-8
-#author:Soufaker
-#time:2023/09/05
+# encoding:utf-8
+# author:Soufaker
+# time:2023/12/19
+import argparse
 import random
 import traceback
 import requests
@@ -22,222 +23,73 @@ import urllib
 import os
 
 
-def beianchaxun(url):
-    urls = url
-    URL = ("https://beian.tianyancha.com/search/{}".format(urls))
-    headers = {
-        'Connection': 'close',
-        'Cache-Control': 'max-age=0',
-        'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'zh-CN,zh;q=0.8',
-    }
-    try:
-        req = requests.get(url=URL, headers=headers)
-        html = req.content
-        titlere = r'<span class="ranking-ym" rel="nofollow">(.+?)</span>'
-        title = re.findall(titlere, html.decode('utf-8'))
-        if len(title) == 0:
-            print(urls, "该公司天眼查找不到备案域名", '\n')
-        else:
-            print('\n', urls, "备案域名: ")
-            for i in title:
-                if i not in black_domian and i != '':
-                    all_domain_list.append(i)
-                    print(i)
-    except:
-        print('有异常，无法爬取')
-
-
-# 选取想要的域名元素
-def Get_MiddleStr(content, startStr, endStr, num):  # 获取中间字符串的⼀个通⽤函数
-    try:
-        startIndex = content.index(startStr)
-        if startIndex >= 0:
-            if num != 1:
-                endIndex = startIndex
-                startIndex = endIndex + num
-
-            else:
-                startIndex += len(startStr)
-                content2 = content[startIndex:]
-                endIndex = content2.index(endStr) + startIndex
-
-        return content[startIndex:endIndex]
-
-    except:
-        return 'ok'
-
-
-# 获取公司查询ID
-def Get_Company_Id(company_name, company_name_list):
-    company_id_name_list = []
-    if company_name != None:
-        com_id = []
-        id = get_company_jt_info(company_name)[0]
-        name = get_company_jt_info(company_name)[1]
-        com_id.append(id)
-        com_id.append(name.replace('<em>', '').replace('</em>', ''))
-        company_id_name_list.append(com_id)
-
-    else:
-        with open(company_name_list, 'r', encoding='utf-8') as f:
-            t = f.readlines()
-            for i in t:
-                com_id = []
-                id = get_company_jt_info(i.strip('\n'))[0]
-                name = get_company_jt_info(i.strip('\n'))[1]
-                com_id.append(id)
-                com_id.append(name.replace('<em>', '').replace('</em>', ''))
-                company_id_name_list.append(com_id)
-
-    return company_id_name_list
-
-
-# 获取公司占百分百股权且未注销的子公司域名信息
-def Get_ALL_Sub_Cmpany_Domain(company_id_name_list):
-    company_info_list = []
-    company_url_list = []
-    com_id = []
-    for l in company_id_name_list:
-        company_info = get_company_jt_info(l[1])
-        info = company_info[1:]
-        company_info_list.append(info)
-        company_url_list.append(info[2])
-        com_id.append(l[0])
-
-    while com_id:
-        co_id = com_id.pop(0)
-        company_id_name_list = get_all_page_id(co_id)
-        if len(company_id_name_list) != 0:
-            for co in company_id_name_list:
-                com_id.append(co[0])
-            for ci in company_id_name_list:
-                try:
-                    company_info = get_company_jt_info(ci[1])
-                    info = company_info[1:]
-                    company_info_list.append(info)
-                    company_url_list.append(info[2])
-                except:
-                    continue
-
-    return company_info_list, company_url_list
-
-
-def Get_Sub_Company_Domain(company_id):
-    company_info_list = get_company_jt_info(company_id)
-    info = company_info_list[1:]
-    company_url_list = company_info_list[2]
-
-    return info, company_url_list
-
-
-def get_all_page_id(id):
-    id_list = []
-    company_url = "https://capi.tianyancha.com/cloud-company-background/company/investListV2?_=1663738376979"
-    data = '{"gid":"' + str(id) + '","pageSize":100,"pageNum":1,"province":"","percentLevel":"-100","category":"-100"}'
-    header = {
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site",
-    }
-    header['X-AUTH-TOKEN'] = x_auth_token
-    try:
-        response = requests.post(url=company_url, headers=header, data=data).text
-        j = json.loads(response)
-        print(j)
-        for i in range(len(j['data']['result'])):
-            l1 = []
-            occ_r = j['data']['result'][i]['percent'][:-1]
-            if occ_r != '':
-                occ_rev = float(occ_r)
-                if occ_rev >= float(company_occ):
-                    l1.append(j['data']['result'][i]['id'])
-                    l1.append(j['data']['result'][i]['name'])
-                    # l1.append(j['data']['result'][i]['regStatus'])
-                    id_list.append(l1)
-
-    except:
-        print('IP地址可能被ban。。请切换IP或者稍后再试!')
-        return id_list
-
-    return id_list
-
-
-def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list, httpx_info,fs_list):
+def Write_To_Excel(all_info_list, mgwj_list, ld_list, httpx_info, fs_list, host_scan_list):
     t = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     wb = Workbook()
-    ws1 = wb.create_sheet('天眼查基本信息', 0)
-    ws2 = wb.create_sheet('收集域名信息', 0)
-    ws3 = wb.create_sheet('fscan扫描信息',0)
-    ws4 = wb.create_sheet('敏感信息', 0)
-    ws5 = wb.create_sheet('漏洞信息', 0)
+    ws1 = wb.create_sheet('收集域名信息', 0)
+    ws2 = wb.create_sheet('fscan扫描信息', 0)
+    ws3 = wb.create_sheet('敏感信息', 0)
+    ws4 = wb.create_sheet('漏洞信息', 0)
+    ws5 = wb.create_sheet('host碰撞信息', 0)
     ws6 = wb.create_sheet('httpx信息', 0)
 
-
-    ws1['A1'] = '公司名'
-    ws1['B1'] = '网址'
-    ws1['C1'] = '邮箱'
-    ws1['D1'] = '联系电话'
-    for l in company_info_list:
-        ws1.append(list(l))
-
-    ws1.column_dimensions['A'].width = 36
-    ws1.column_dimensions['B'].width = 36
-    ws1.column_dimensions['C'].width = 36
-    ws1.column_dimensions['D'].width = 36
-
-    ws2['A1'] = '网址'
-    ws2['B1'] = 'ip地址'
-    ws2['C1'] = '端口'
-    ws2['D1'] = '网页标题'
-    ws2['E1'] = '协议'
-    ws2['F1'] = '状态码'
-    ws2['G1'] = '框架'
-    ws2['H1'] = '备案号'
+    ws1['A1'] = '网址'
+    ws1['B1'] = 'ip地址'
+    ws1['C1'] = '端口'
+    ws1['D1'] = '网页标题'
+    ws1['E1'] = '协议'
+    ws1['F1'] = '状态码'
+    ws1['G1'] = '框架'
+    ws1['H1'] = '备案号'
     for l in all_info_list:
-        ws2.append(l)
+        ws1.append(l)
 
-    ws2.column_dimensions['A'].width = 30
-    ws2.column_dimensions['B'].width = 15
-    ws2.column_dimensions['C'].width = 7
-    ws2.column_dimensions['D'].width = 25
-    ws2.column_dimensions['E'].width = 7
-    ws2.column_dimensions['F'].width = 7
-    ws2.column_dimensions['G'].width = 30
-    ws2.column_dimensions['H'].width = 25
+    ws1.column_dimensions['A'].width = 30
+    ws1.column_dimensions['B'].width = 15
+    ws1.column_dimensions['C'].width = 7
+    ws1.column_dimensions['D'].width = 25
+    ws1.column_dimensions['E'].width = 7
+    ws1.column_dimensions['F'].width = 7
+    ws1.column_dimensions['G'].width = 30
+    ws1.column_dimensions['H'].width = 25
 
-    ws3['A1'] = '漏洞地址'
-    ws3.column_dimensions['A'].width = 70
+    ws2['A1'] = '漏洞地址'
+    ws2.column_dimensions['A'].width = 70
     for l in fs_list:
         list1 = []
         list1.append(l)
-        ws3.append(list1)
+        ws2.append(list1)
 
-    ws4['A1'] = '地址'
-    ws4['B1'] = '状态码'
-    ws4['C1'] = '大小'
+    ws3['A1'] = '地址'
+    ws3['B1'] = '状态码'
+    ws3['C1'] = '大小'
 
-    ws4.column_dimensions['A'].width = 70
-    ws4.column_dimensions['B'].width = 15
-    ws4.column_dimensions['C'].width = 15
+    ws3.column_dimensions['A'].width = 70
+    ws3.column_dimensions['B'].width = 15
+    ws3.column_dimensions['C'].width = 15
 
     for l in mgwj_list:
-        ws4.append(l)
+        ws3.append(l)
 
-    ws5['A1'] = '漏洞名字'
-    ws5['B1'] = '漏洞等級'
-    ws5['C1'] = '漏洞地址'
+    ws4['A1'] = '漏洞名字'
+    ws4['B1'] = '漏洞等級'
+    ws4['C1'] = '漏洞地址'
 
-    ws5.column_dimensions['A'].width = 20
-    ws5.column_dimensions['B'].width = 10
-    ws5.column_dimensions['C'].width = 50
+    ws4.column_dimensions['A'].width = 20
+    ws4.column_dimensions['B'].width = 10
+    ws4.column_dimensions['C'].width = 50
 
     for l in ld_list:
-        ws5.append(l)
+        ws4.append(l)
+
+    ws5['A1'] = '碰撞成功信息'
+
+    ws5.column_dimensions['A'].width = 150
+
+    for l in host_scan_list:
+        a = []
+        a.append(l)
+        ws5.append(a)
 
     ws6['A1'] = '网址'
     ws6['B1'] = '状态码'
@@ -250,33 +102,7 @@ def Write_To_Excel(company_info_list, all_info_list, mgwj_list, ld_list, httpx_i
     for l in httpx_info:
         ws6.append(l)
 
-
     wb.save("./result/baolumian/暴露面收集" + t + ".xlsx")
-
-
-def Get_icp_Num(company_name):
-    company_url = "https://beian.tianyancha.com/search/" + company_name
-    print(company_url)
-    header = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-    try:
-        response = requests.get(url=company_url, headers=header).text
-        resp = response.replace(' ', '').replace('\n', '').replace('\t', '').replace("\"", "")
-
-        flag = True
-        page_num = 1
-
-        while flag:
-            for i in range(2, 100):
-                str_flag = '/p' + str(i)
-                if str_flag in resp:
-                    flag = True
-                    page_num += 1
-                else:
-                    flag = False
-    except:
-        page_num = 0
-
-    return page_num
 
 
 def yt_info(url):
@@ -294,7 +120,6 @@ def yt_info(url):
 
         if loadurl != None:
             company = loadurl[0]['company']
-            all_company_name_list.append(company)
             print(company)
             for i in range(0, len(loadurl)):
                 domain = loadurl[i]['domain']
@@ -410,9 +235,12 @@ def isCDN(domain, ip):  # 判断目标是否存在CDN
         else:
             if ip not in ip_list:
                 ip_list.append(ip)
+            # 添加到对应域名IP文件列表里,方便进行host碰撞
+            all_domain_ip_list.append(domain + '-' + ip)
             return ip
     except:
         return '-'
+
 
 def fy_list(list1, count):
     new_list = []
@@ -510,26 +338,15 @@ def split_list_average_n(origin_list, n):
         yield origin_list[i:i + n]
 
 
-def get_all_url_fo_yt(company_info_list, company_domains_file):
+def get_all_url_fo_yt():
     company_domains_list = []
-    if len(company_domains_file) > 2:
-        with open(company_domains_file, 'r', encoding='utf-8') as f:
+    if '.txt' in company_domain:
+        with open(company_domain, 'r', encoding='utf-8') as f:
             l = f.readlines()
             for i in l:
                 company_domains_list.append(i.strip('\n'))
-
-    # 查询所有域名
-    for com in company_info_list:
-        # 备案查询域名
-        beianchaxun(com[0])
-
-        # 公司备案信息查询的域名
-        company_info_list = com[1].split(',')
-        for com in company_info_list:
-            if '.' in com:
-                val = tldextract.extract(com)
-                if val.registered_domain != '':
-                    all_domain_list.append(val.registered_domain)
+    else:
+        company_domains_list.append(company_domain)
 
     if len(company_domains_list) != 0:
         for com in company_domains_list:
@@ -537,71 +354,17 @@ def get_all_url_fo_yt(company_info_list, company_domains_file):
 
     print('当前搜集了如下域名')
     all_qc_domain_list = list(set(all_domain_list))
-    filename = './result/alldomain/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_all_domain_list.txt'
-    with open(filename, 'w', encoding='utf-8') as f:
-        for a in all_qc_domain_list:
-            f.writelines(a + '\n')
-    print(all_qc_domain_list)
-    if x_domain != '1':
-        if notauto != True:
-            # 调用鹰图,并添加到所有搜集的列表
-            if is_hunter == '0':
-                print('开始调用鹰图')
-                yt_get_info(all_qc_domain_list)
-            if is_fofa == '0':
-                print('开始使用fofa查询')
-                get_fofa_url(all_qc_domain_list)
+    if notauto != True:
+        # 调用鹰图,并添加到所有搜集的列表
+        if is_hunter == '0':
+            print('开始调用鹰图')
+            yt_get_info(all_qc_domain_list)
+        if is_fofa == '0':
+            print('开始使用fofa查询')
+            get_fofa_url(all_qc_domain_list)
 
 
-def get_company_jt_info(name):
-    all_info = []
-    # proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
-
-    company_url = "https://capi.tianyancha.com/cloud-tempest/web/searchCompanyV3?_=1672969688987"
-    data = '{"word":"' + str(name) + '","sortType":"1","pageSize":1,"referer":"search","pageNum":1}'
-    print(data)
-    header = {
-        "host": "capi.tianyancha.com",
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
-        "version": "TYC-Web",
-    }
-    header['X-AUTH-TOKEN'] = x_auth_token
-    try:
-        response = requests.post(url=company_url, headers=header, data=data.encode('utf-8'), verify=False).text
-        j = json.loads(response)
-        id = j['data']['companyList'][0]['id']
-        name = j['data']['companyList'][0]['name']
-        email = j['data']['companyList'][0]['emailList']
-        phone = j['data']['companyList'][0]['phoneList']
-        site = str(j['data']['companyList'][0]['websites']).split('\t')
-        website = []
-        for w in site:
-            if ';' not in w:
-                website.append(w)
-
-        all_info.append(id)
-        all_info.append(name.replace('<em>', '').replace('</em>', ''))
-        if website != None:
-            all_info.append(','.join(map(str, website)))
-        else:
-            all_info.append('无信息')
-
-        if email != None:
-            all_info.append(','.join(map(str, email)))
-        else:
-            all_info.append('无信息')
-
-        if phone != None:
-            all_info.append(','.join(map(str, phone)))
-        else:
-            all_info.append('无信息')
-    except Exception as e:
-        print('出异常了', e)
-
-    return all_info
-
-#判断是ip还是域名
+# 判断是ip还是域名
 def isIP(str):
     p = re.compile('^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$')
     if p.match(str):
@@ -609,20 +372,22 @@ def isIP(str):
     else:
         return False
 
+
 def save_cache(target_list):
     yt_fofa_add_list = []
     yt_fofa_add_list2 = []
     sm_add_list = []
     # 读取历史扫描信息
     sm_cache_file_list = open('./caches/sm_cache.txt', 'r', encoding='utf-8').read().split('\n')
-    #print('target', target_list)
-    #print('sm', sm_cache_file_list)
+    # print('target', target_list)
+    # print('sm', sm_cache_file_list)
     # 添加fafa_yt记录的历史域名信息
     if len(target_list) != 0:
         for tar in target_list:
             print(tar[0])
             if tar[0] not in sm_cache_file_list:
-                if str(tar[5]) == '200' or str(tar[5]) == '301' or str(tar[5]) == '302' or str(tar[5]) == '201' or str(tar[5]) == '404' or str(tar[5]) == '401' or str(tar[5]) == '405':
+                if str(tar[5]) == '200' or str(tar[5]) == '301' or str(tar[5]) == '302' or str(tar[5]) == '201' or str(
+                        tar[5]) == '404' or str(tar[5]) == '401' or str(tar[5]) == '405':
                     info = []
                     info.append(str(tar[0]))
                     info.append(str(tar[5]))
@@ -649,37 +414,38 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
     caches_file = open('./caches/sm_cache.txt', 'a', encoding='utf-8')
     try:
         file_list2 = open(filename, 'r', encoding='utf-8').read().split('\n')
-        #print('-------------')
-        #print(file_list2)
+        # print('-------------')
+        # print(file_list2)
         filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'temp_port.txt'
         temp_l = open(filename, 'r', encoding='utf-8').read().split('\n')
-        #print(temp_l)
-        new_filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()) + 'new_temp_port.txt'
+        # print(temp_l)
+        new_filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
+                                                               time.localtime()) + 'new_temp_port.txt'
         with open(new_filename_temp, 'w') as f:
             for i in temp_l:
                 if ':' in i:
-                    #print('123')
-                    #print(i.split(':')[0])
+                    # print('123')
+                    # print(i.split(':')[0])
                     f.writelines(i.split(':')[0] + '\n')
                 else:
-                    f.writelines(i+ '\n')
+                    f.writelines(i + '\n')
 
         filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
                                                                   time.localtime()) + 'all_url_list.txt'
 
         port_scan = './inifile/naabu/naabu  -l ' + new_filename_temp + ' -top-ports 1000 -o ' + filename_temp
-        #print('2 ' + port_scan)
+        # print('2 ' + port_scan)
         os.system(port_scan)  # &> /dev/null
         httpx_filename = filename_temp[0:-4] + '_httpx.txt'
         http_list = open(filename_temp, 'r')
-        #print('123'+httpx_filename)
+        # print('123'+httpx_filename)
         with open(httpx_filename, 'w+') as f:
             for h in http_list:
-                #print(h)
+                # print(h)
                 f.writelines('https://' + h)
                 f.writelines('http://' + h)
-        http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -mc 200,401,403,404,302,301  -title   -status-code  -fr -o  ' + filename_filter_name  # &> /dev/null'
-        #print('1 ' + http_scan)
+        http_scan = './inifile/httpx/httpx  -l ' + httpx_filename + ' -mc 200,401,403,404,302,301,500,405,501,502  -title   -status-code  -fr -o  ' + filename_filter_name  # &> /dev/null'
+        # print('1 ' + http_scan)
         os.system(http_scan)  # &> /dev/null
         # os.system('rm -rf ' + filename)
         # os.system('rm -rf ' + filename_temp)
@@ -700,8 +466,10 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
         print(httpx_info)
 
         #
-        new_filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()) + 'new_all_url_list.txt'
+        new_filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
+                                                                      time.localtime()) + 'new_all_url_list.txt'
         print('new_filename_filter_name', new_filename_filter_name)
+
         caches_file_list_1 = open(new_filename_filter_name, 'w+', encoding='utf-8')
         # 写入awvs文件
         file_list = []
@@ -709,7 +477,7 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
             if f[0] not in file_list:
                 file_list.append(f[0])
         print(file_list)
-        #print(sm_cache_file_list)
+        # print(sm_cache_file_list)
         for l in file_list:
             if 'http' not in l:
                 l1 = 'http://' + l
@@ -764,6 +532,10 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
 def scan_awvs(file_list):
     if avsm == True:
         print('开始调用awvs')
+        try:
+            os.system('rm -rf awvsput.out')
+        except:
+            print('不存在该文件')
         os.system('nohup python3 awvs_monitor.py >awvsput.out 2>&1 &')
     awvs_file_name = './result/awvslist/all_av_list.txt'
     with open(awvs_file_name, 'a', encoding='utf-8') as f:
@@ -774,6 +546,7 @@ def scan_awvs(file_list):
 
 
 def quchong_info_list(all_info_list):
+    host_scan_list = []
     new_list = []
     mgwj_list = []
     ld_list = []
@@ -804,28 +577,32 @@ def quchong_info_list(all_info_list):
         temp_list2 = list(set(temp_list))
         with open(filename, 'w', encoding='utf-8') as f:
             for s in temp_list2:
-                f.writelines(s+'\n')
+                f.writelines(s + '\n')
 
         file_filter_name = httpx_naabu_scan(filename, sm_cache_file_list)
         print('ssss')
         print(file_filter_name)
+        # 将生成的url放入对应的域名分类文件中,便于进行host碰撞
+        process_and_save_urls()
         print('xxxxx')
+
+        if hostm == True:
+            host_scan_list = host_collision()
 
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
 
-
         if fs == True:
-            fs_list = fscan(file_filter_name,ip_list)
+            fs_list = fscan(file_filter_name, ip_list)
 
         if ld == True:
             ld_list = nuclei(file_filter_name)
 
-
     # 扫描自己收集的资产
     if notauto == True:
         filename = './result/notautolist/notautolist.txt'
-        new_filename = './result/notautolist/'+str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))+'new_notautolist.txt'
+        new_filename = './result/notautolist/' + str(
+            time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())) + 'new_notautolist.txt'
         add_list = open(filename, 'r', encoding='utf-8').read().split('\n')
         temp_list = []
         for a in add_list:
@@ -855,12 +632,16 @@ def quchong_info_list(all_info_list):
 
         with open(new_filename, 'w', encoding='utf-8') as f:
             for s in temp_list2:
-                f.writelines(s+'\n')
+                f.writelines(s + '\n')
 
         file_filter_name = httpx_naabu_scan(new_filename, sm_cache_file_list)
         print('ssss')
         print(file_filter_name)
         print('xxxxx')
+        # 添加host碰撞
+        if hostm == True:
+            host_scan_list = host_collision()
+
         if ml == True:
             mgwj_list = ml_sm(file_filter_name)
 
@@ -868,7 +649,7 @@ def quchong_info_list(all_info_list):
             ld_list = nuclei(file_filter_name)
 
         if fs == True:
-            fs_list = fscan(file_filter_name,ip_list)
+            fs_list = fscan(file_filter_name, ip_list)
 
     print('==============================')
     # print(mgwj_list)
@@ -876,7 +657,8 @@ def quchong_info_list(all_info_list):
     print('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
     print(yt_fofa_info_list)
     print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
-    return yt_fofa_info_list, mgwj_list, ld_list,fs_list
+    return yt_fofa_info_list, mgwj_list, ld_list, fs_list, host_scan_list
+
 
 def bypass403(mg_url):
     os.system('./inifile/bypass403/f403_linux_amd64 -u ' + mg_url + '> temp.txt')
@@ -904,6 +686,89 @@ def bypass403(mg_url):
     os.system('rm -rf ./inifile/bypass403/temp.txt')
     return pass_url_list
 
+
+def host_collision():
+    result_list = []
+    if len(ip_list) > 1:
+        # 添加域名IP到ip_as_domain文件夹
+        append_ip_to_domain_file(all_domain_ip_list)
+        ip_file_list = process_domian_ip_files('./result/ip_as_domain/')
+        print(ip_file_list)
+        for ip_file in ip_file_list:
+            if 'temp' not in ip_file:
+                """ Extracts and returns the collision success data from the provided file. """
+                # Read content from the file
+                file_path = './inifile/hostscan/' + time.strftime("%Y-%m-%d-%H-%M-%S",
+                                                                  time.localtime()) + "_host_scan.txt"
+                domain_file = './result/maindomain/' + ip_file.split('./result/ip_as_domain/')[1]
+                print(ip_file)
+                print(domain_file)
+                os.system(
+                    "java -jar ./inifile/hostscan/HostCollision.jar -ifp " + ip_file + " -hfp " + domain_file + " -t 10 -cssc 200 > " + file_path)
+                print(
+                    "java -jar ./inifile/hostscan/HostCollision.jar -ifp " + ip_file + " -hfp " + domain_file + " -t 10 -cssc 200 > " + file_path)
+
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    text_content = file.read()
+
+                # Extracting the required portion of the text
+                start_keyword = "====================碰 撞 成 功 列 表===================="
+                end_keyword = "执行完毕 ヾ(≧▽≦*)o"
+                start_index = text_content.find(start_keyword) + len(start_keyword)
+                end_index = text_content.find(end_keyword)
+
+                # Extracted text
+                extracted_text = text_content[start_index:end_index].strip()
+
+                # Splitting the text into lines and adding to the list
+                result = extracted_text.split('\n')
+                for res in result:
+                    if res != '' and '协议' in res:
+                        result_list.append(res)
+
+        folder_path = './result/ip_as_domain'
+        # 列出文件夹下的所有文件（包括子文件夹）
+        for filename in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, filename)
+            # 如果是文件，则删除
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+
+        # Example usage
+        try:
+            for filename in os.listdir('./'):
+                file_path = os.path.join('./', filename)
+                # Check if it's a file and matches the criteria
+                if (os.path.isfile(file_path) and filename.startswith('202') and
+                        '_' in filename and (filename.endswith('.txt') or filename.endswith('.csv'))):
+                    os.remove(file_path)
+        except:
+            print('无文件')
+
+        return result_list
+    else:
+        return result_list
+
+
+def process_domian_ip_files(directory_path):
+    """ List all files in the directory, add them to a list, and then delete them. """
+    test = []  # List to hold the file paths
+
+    # Check if the directory exists
+    if os.path.exists(directory_path) and os.path.isdir(directory_path):
+        # List all files and directories in the specified directory
+        for item in os.listdir(directory_path):
+            item_path = os.path.join(directory_path, item)
+            # Check if it is a file and not a directory
+            if os.path.isfile(item_path):
+                test.append(item_path)
+
+    else:
+        print(f"Directory {directory_path} does not exist.")
+
+    return test
+
+
 def ml_sm(filename):
     url_list = open(filename, 'r', encoding='utf-8', errors='ignore').read().split('\n')
     # 返回的字节长度列表
@@ -916,31 +781,34 @@ def ml_sm(filename):
         try:
             if 'http' in url:
                 temp_file = 'temp_result.txt'
-                print('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt -ac -t 100 -o ' + temp_file)
-                os.system('./inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt -ac -t 100 -o ' + temp_file)
+                print(
+                    './inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt -ac -t 100 -o ' + temp_file)
+                os.system(
+                    './inifile/ffuf/ffuf -u ' + url + '/FUZZ -w ./inifile/dict/file_top_200.txt -ac -t 100 -o ' + temp_file)
 
             else:
                 continue
-
 
             with open(temp_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)['results']
                 f.close()
 
-            #删除临时文件
-            os.system('rm -rf '+temp_file)
-            #print(data)
+            # 删除临时文件
+            os.system('rm -rf ' + temp_file)
+            # print(data)
 
             # 存放返回包长度
             for i in range(len(data)):
                 msg_info.append(str(tldextract.extract(data[i]['url']).registered_domain) + str(data[i]['words']))
             for i in range(len(data)):
                 msg_info2.append(str(data[i]['words']))
-            #print(msg_info)
+            # print(msg_info)
 
             for i in range(len(data)):
                 info_list = []
-                if msg_info.count(str(tldextract.extract(data[i]['url']).registered_domain) + str(data[i]['words'])) == 1 and data[i]['words'] > 100 and msg_info2.count(str(data[i]['words'])) < 4 :
+                if msg_info.count(
+                        str(tldextract.extract(data[i]['url']).registered_domain) + str(data[i]['words'])) == 1 and \
+                        data[i]['words'] > 100 and msg_info2.count(str(data[i]['words'])) < 4:
                     info_list.append(data[i]['url'])
                     info_list.append(data[i]['status'])
                     info_list.append(data[i]['words'])
@@ -948,7 +816,7 @@ def ml_sm(filename):
                 else:
                     print('1')
 
-                #对扫描的403,401页面进行bypass扫描
+                # 对扫描的403,401页面进行bypass扫描
                 if data[i]['status'] == 403 or data[i]['status'] == 401:
                     l = bypass403(data[i]['url'])
                     if len(l) != 0:
@@ -960,7 +828,7 @@ def ml_sm(filename):
     return result
 
 
-def dingtalk(message_list, mgml_list, ld_list, fs_list):
+def dingtalk(message_list, mgml_list, ld_list, fs_list, host_scan_list):
     # 钉钉WebHook地址
     DWebHook = 'https://oapi.dingtalk.com/robot/send?access_token=' + str(dingding_hook)
     Dsecret = dingding_key  # 可选：创建机器人勾选“加签”选项时使用
@@ -970,6 +838,36 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
     # xiaoding = DingtalkChatbot(webhook, pc_slide=True)  # 方式三：设置消息链接在PC端侧边栏打开（v1.5以上新功能）
     # Text消息@所有人
     # xiaoding.send_text(msg=c, is_at_all=True)
+
+    # host碰撞信息
+    # fscan扫描漏洞信息
+    new_list5 = []
+    num5 = len(host_scan_list)
+    print(host_scan_list)
+    if int(num5) > 100:
+        n5 = num5 // 50
+    else:
+        n5 = 1
+
+    for i in range(n5):
+        one_list = host_scan_list[math.floor(i / n5 * num5):math.floor((i + 1) / n5 * num5)]
+        new_list5.append(one_list)
+    if num5 != 0:
+        for i in new_list5:
+            xuhao = 1
+            message = ''
+            title = dingding_tag + ':新收集host碰撞成功信息 ' + str(
+                num5) + ' 个' + '\n' + '-----------------------------------------------'
+
+            for msg in i:
+                message = message + str(xuhao) + '.' + str(msg) + '\n'
+                xuhao += 1
+                message = title.lstrip() + '\n' + message
+                title = ''
+            message + '\n' + '-----------------------------------------------'
+            msg5 = message.lstrip('\n')
+            if message != '':
+                xiaoding.send_text(msg=msg5)
 
     # fscan扫描漏洞信息
     new_list4 = []
@@ -1000,7 +898,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
             if message != '':
                 xiaoding.send_text(msg=msg4)
 
-    #漏洞信息个数
+    # 漏洞信息个数
     msg_info = []
     # 漏洞信息
     new_list3 = []
@@ -1025,7 +923,8 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
                 msg_info.append(msg[0])
 
             for msg in i:
-                if 'ssl' in msg[0] or 'tls' in msg[0] or '-certificate' in msg[0] or 'cipher' in msg[0] or 'mismatched' in msg[0] or msg_info.count(msg[0]) > 6:
+                if 'ssl' in msg[0] or 'tls' in msg[0] or '-certificate' in msg[0] or 'cipher' in msg[
+                    0] or 'mismatched' in msg[0] or msg_info.count(msg[0]) > 6:
                     continue
                 info = str(msg[0]) + '   ' + str(msg[1]) + '   ' + str(msg[2])
                 message = message + str(xuhao) + '.' + str(info) + '\n'
@@ -1053,7 +952,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
         for i in new_list2:
             xuhao = 1
             message = ''
-            title = dingding_tag+':新收集敏感信息 ' + str(
+            title = dingding_tag + ':新收集敏感信息 ' + str(
                 num2) + ' 个,其中返回为200的如下' + '\n' + '-----------------------------------------------'
 
             for msg in i:
@@ -1085,7 +984,7 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
             print(i)
             xuhao = 1
             num1 = len(i)
-            title = dingding_tag+':新收集暴露面信息 ' + str(
+            title = dingding_tag + ':新收集暴露面信息 ' + str(
                 num1) + ' 个,其中状态码为200的如下' + '\n' + '-----------------------------------------------' + '\n' + '网址           ' + '    状态码    ' + '     标题      '
             message = ''
             for msg in i:
@@ -1103,20 +1002,20 @@ def dingtalk(message_list, mgml_list, ld_list, fs_list):
 
 
 # 调用搜集的所有IP列表进行fscan扫描
-def fscan(filename,ip_list):
+def fscan(filename, ip_list):
     l = open('./result/allip/ip_cache.txt', 'r', encoding='utf-8').read().split('\n')
     url_file = './result/allip/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_allip.txt'
     loud_file = './result/fscan/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_fscan.txt'
     loud_file2 = './result/fscan/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + '_ip_fscan.txt'
-    with open(url_file,'w') as f:
+    with open(url_file, 'w') as f:
         for ip in ip_list:
             if ip not in l:
                 f.writelines(ip + '\n')
     os.system('./inifile/lousao/fscan  -uf ' + filename + ' -o ' + str(loud_file))
-    #os.system('./inifile/lousao/fscan  -p 22,3389,445,3306,1433,1521,21,27017,11211,5432,23,25,465,110,995,143,993,5900,6379 -np -hf ' + url_file + ' -o ' + str(loud_file2))
+    # os.system('./inifile/lousao/fscan  -p 22,3389,445,3306,1433,1521,21,27017,11211,5432,23,25,465,110,995,143,993,5900,6379 -np -hf ' + url_file + ' -o ' + str(loud_file2))
     os.system('./inifile/lousao/fscan  -np -hf ' + url_file + ' -o ' + str(loud_file2))
     list1 = []
-    with open('./result/allip/ip_cache.txt','a') as f:
+    with open('./result/allip/ip_cache.txt', 'a') as f:
         for ip in ip_list:
             f.writelines(ip + '\n')
     try:
@@ -1137,34 +1036,18 @@ def fscan(filename,ip_list):
                     list1.append(t.strip('\n'))
     except:
         print('无漏洞')
-    # try:
-    #     with open(loud_file, 'r') as f:
-    #         print(loud_file)
-    #         test1 = f.readlines()
-    #         for t in test1:
-    #             if '[*]' in t and 'alive ports' not in t:
-    #                 list1.append(t.strip('\n'))
-    # except:
-    #     print('无漏洞!')
-    # try:
-    #     with open(loud_file2, 'r') as f:
-    #         print(loud_file2)
-    #         test1 = f.readlines()
-    #         for t in test1:
-    #             if '[*]' in t and 'alive ports' not in t:
-    #                 list1.append(t.strip('\n'))
-    # except:
-    #     print('无漏洞!')
 
     print(list1)
     return list1
+
 
 def nuclei(filename):
     os.system('./inifile/lousao/nuclei -update')
     os.system('./inifile/lousao/nuclei -update-templates ')
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
     # os.system('./inifile/lousao/nuclei -un -ut')
-    os.system('./inifile/lousao/nuclei -mhe 3 -timeout 1 -rl 300 -c 50  -s low,medium,high,critical -l ' + str(filename) + ' -o ' + str(loud_file))
+    os.system('./inifile/lousao/nuclei -mhe 3 -timeout 1 -rl 300 -c 50  -s low,medium,high,critical -l ' + str(
+        filename) + ' -o ' + str(loud_file))
     list1 = []
     list2 = []
     try:
@@ -1191,51 +1074,62 @@ def nuclei(filename):
     return list2
 
 
-def get_github_info(company_info_list, all_company_name_list):
-    name_list = []
-    info_list = []
-    for com in company_info_list:
-        name_list.append(com[0])
-    for com in all_company_name_list:
-        name_list.append(com)
+def process_and_save_urls():
+    """ Process each URL in the given file, save them into domain-named files, and avoid duplicates. """
+    # Ensure the output folder exists
+    folder_path = './result/maindomain/'
+    os.makedirs(folder_path, exist_ok=True)
+    domian_list = []
+    for http in httpx_info:
+        if '40' in http[1] or '50' in http[1]:
+            domian_list.append(http[0])
+    print('=-=')
+    print(domian_list)
+    print('=-=')
+    for url in domian_list:
+        url = url.strip()
+        if url:
+            # Remove http:// or https:// from the URL
+            url = url.replace('http://', '').replace('https://', '')
 
-    for name in name_list:
-        page = 1
-        while True:
-            header = {"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                      "Cookie": "",
-                      "X-CSRFToken": ""}
-            title = '(related_company==' + str(name) + '||url==' + str(name) + '||repository.description==' + str(
-                name) + '||code_detail==' + str(name) + ')'
-            data = 'page=' + str(page) + '&pagesize=10&title=' + str(title) + '&title_type=code'
-            print(data)
-            proxies = {'http': 'http://localhost:8080', 'https': 'http://localhost:8080'}
-            a = requests.post('https://0.zone/api/home/search/', data=data.encode('utf-8'), headers=header,
-                              verify=False, proxies=proxies).json()
-            if str(a['code']) == '1':
-                continue
-            if str(a['code']) == '3':
-                break
-            res = a['data']['data_list']
-            for r in res:
-                info = []
-                tag = r['_source']['tags']
-                type = r['_source']['type']
-                tags = ''
-                for t in tag:
-                    tags = tags + t + ' || '
-                tags = tags + '||' + type
-                source = r['_source']['source']
-                url = r['_source']['url']
-                code_detail = r['_source']['code_detail']
-                info.append(tags)
-                info.append(url)
-                info.append(code_detail)
-                info.append(source)
-                info_list.append(info)
-            page += 1
+            # Extract the main domain using tldextract
+            domain = tldextract.extract(url).registered_domain
 
-    return info_list
+            if domain:
+                # Path for the new file named after the domain
+                domain_file_path = os.path.join(folder_path, domain + '.txt')
+
+                # Check if the URL is already in the file
+                if not os.path.exists(domain_file_path) or url not in open(domain_file_path).read():
+                    # Write the URL to the corresponding domain file
+                    with open(domain_file_path, 'a') as domain_file:
+                        domain_file.write(url + '\n')
+
+
+def append_ip_to_domain_file(domain_ip_list):
+    folder_path = './result/ip_as_domain/'
+    """ Append the IP address to a file named after the domain's top-level domain. """
+    # Extract the top-level domain from the given domain
+    # Define the filename
+    temp_ip_file = './result/ip_as_domain/temp_ip.txt'
+    os.system('touch ' + temp_ip_file)
+    domain_l = set(domain_ip_list)
+    print(domain_l)
+    for i in domain_l:
+        domain = i.split('-')[0]
+        ip = i.split('-')[1]
+        tld = tldextract.extract(domain).registered_domain
+        filename = os.path.join(folder_path, tld + '.txt')
+        os.system('./inifile/naabu/naabu  -host ' + ip + ' -top-ports 1000 -o ' + temp_ip_file)
+
+        # Append or create the file with the IP address
+        if os.path.exists(temp_ip_file):
+            ip_list = open(temp_ip_file, 'r', encoding='utf-8').read().split('\n')
+            for ip in ip_list:
+                if not os.path.exists(filename) or ip not in open(filename).read() and len(ip) > 4:
+                    with open(filename, 'a') as file:
+                        file.write(ip + '\n')
+
 
 def quchong(l1):
     temp_list = []
@@ -1254,22 +1148,77 @@ def quchong(l1):
 
     return l
 
+
+def print_custom_help(version,check_msg):
+    print(f"""
+   __                       
+  / /__ ____  __ ____ _____ 
+ / / _ `/ _ \/ // / // / -_)
+/_/\_,_/\___/\_, /\_,_/\__/ 
+            /___/          
+    version: {version}({check_msg}) 
+    
+项目地址:
+https://github.com/Soufaker/laoyue(欢迎issues和star)
+
+项目简介:
+一款自动化SRC监控赏金猎人项目，专为安全研究人员和赏金猎人设计，提供多种工具集成和自动化功能，加快漏洞发现和报告流程。
+
+参数说明:
+-h, --help  : 显示帮助信息
+-d, --domain: 指定单个域名或包含多个域名的文件（如：src.txt）。
+-m, --ml    : 使用ffuf扫描目录。可在./inifile/dict目录下添加字典。
+-n, --nl    : 使用nuclei进行漏洞扫描。
+-f, --fs    : 使用fscan进行漏洞扫描。
+-a, --av    : 使用awvs进行漏洞扫描。
+-z, --hostz : 进行host碰撞。
+-N, --notauto: 启用被动扫描模式，手动收集URL资产后使用。
+
+常用自动化监控命令(可以先不加nohup手动测试一下看看能跑通不,能跑通就用下面的命令,可以自行增加删除参数,下面的是都跑一遍):
+单域名扫描: nohup python3 laoyue.py -d example.com  -m -f -n -z -a  > laoyue.out 2>&1 &
+多域名扫描: nohup python3 laoyue.py -d "SRC.txt"  -m -f -n -z -a  > laoyue.out 2>&1 &
+被动扫描: nohup python3 laoyue.py -m -n -f -z -a -N &
+
+额外说明:
+1.awvs脚本可单独使用,命令: nohup python3 awvs_monitor.py >awvsput.out 2>&1 &
+2.最好运行监控命令: nohup ./check_nohup_size.sh >check_size.out 2>&1 & 
+3.目前脚本功能逻辑为: fofa,yt(url定期收集)-->naabu(端口扫描)-->httpx(存活探测)-->(对收集的资产的url进行去重,对IP进行cdn检测去重)-->进行host碰撞,漏洞扫描,敏感目录扫描,弱口令探测等-->(归纳信息进行去重)-->本地服务器保存excel-->发送消息(钉钉,企业微信)
+4.后续持续添加新功能和优化速度
+
+    """)
+
+# 获取github项目版本
+def get_latest_release_version():
+    try:
+        # GitHub API URL for releases
+        api_url = f"https://api.github.com/repos/Soufaker/laoyue/releases/latest"
+
+        # Make a GET request to the GitHub API
+        response = requests.get(api_url)
+        response.raise_for_status()
+
+        # Parse the JSON response
+        data = response.json()
+
+        # Return the tag name (version)
+        return data.get("tag_name", "Unknown")
+    except Exception as e:
+        return "Unknown"
+
 if __name__ == '__main__':
     # 参数设置
-    parser = optparse.OptionParser()
-    parser.add_option('-c', '--company', action='store', dest="company_name")
-    parser.add_option('-x', '--xdomain', action='store', dest="x_domain")
-    parser.add_option('-l', '--list', action='store', dest="company_name_list")
-    parser.add_option('-o', '--occ', action='store', default='100', dest="company_occ")
-    parser.add_option('-d', '--domain', action='store', default='', dest="company_domains")
-    parser.add_option('-z', '--zs', action='store_true', dest="zs_domains")
-    parser.add_option('-r', '--recursion', action='store', default='', dest="recursion_level")
-    parser.add_option('-m', '--ml', action='store_true', dest="ml_sm")
-    parser.add_option('-n', '--nl', action='store_true', dest="ld_sm")
-    parser.add_option('-f', '--fs', action='store_true', dest="fs_sm")
-    parser.add_option('-a', '--av', action='store_true', dest="av_sm")
-    parser.add_option('-N', '--notauto', action='store_true', dest="not_auto")
-    options, args = parser.parse_args()
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('-h', '--help', action='store_true', help='显示帮助信息')
+    # 添加其他参数
+    parser.add_argument('-d', '--domain', action='store', default='', dest="company_domains")
+    parser.add_argument('-m', '--ml', action='store_true', dest="ml_sm")
+    parser.add_argument('-n', '--nl', action='store_true', dest="ld_sm")
+    parser.add_argument('-f', '--fs', action='store_true', dest="fs_sm")
+    parser.add_argument('-a', '--av', action='store_true', dest="av_sm")
+    parser.add_argument('-z', '--hostz', action='store_true', dest="host_sm")
+    parser.add_argument('-N', '--notauto', action='store_true', dest="not_auto")
+
+    args = parser.parse_args()
 
     # 加载配置文件
     cf = ConfigParser()
@@ -1330,7 +1279,7 @@ if __name__ == '__main__':
     x_auth_token = cf.get('tyz', 'x-auth-token')
     black = cf.get('black_domain', 'domain')
     black_domian = black.split(',')
-    dingding_tag = cf.get('tag','dingding_tag')
+    dingding_tag = cf.get('tag', 'dingding_tag')
     # 所有搜集到的URL列表
     all_url_list = []
 
@@ -1344,6 +1293,10 @@ if __name__ == '__main__':
     # 全局搜寻的域名
     all_domain_list = []
 
+    # 全局域名和IP的映射表
+    global all_domain_ip_list
+    all_domain_ip_list = []
+
     # 初始化
     quchong_list = []
     mgwj_list = []
@@ -1353,72 +1306,63 @@ if __name__ == '__main__':
     ip_list = []
 
     # 参数获取
-    global company_occ
-    company_name = options.company_name
-    company_domains_file = options.company_domains
-    company_list = options.company_name_list
-    company_occ = float(options.company_occ)
-
-    global all_company_name_list
-    all_company_name_list = []
-
     global ml
-    ml = options.ml_sm
+    ml = args.ml_sm
 
     global ld
-    ld = options.ld_sm
+    ld = args.ld_sm
 
     global fs
-    fs = options.fs_sm
+    fs = args.fs_sm
 
     global avsm
-    avsm = options.av_sm
+    avsm = args.av_sm
+
+    global hostm
+    hostm = args.host_sm
 
     global notauto
-    notauto = options.not_auto
+    notauto = args.not_auto
 
-    global zs_domains
-    zs_domain = options.zs_domains
-
-    global x_domain
-    x_domain = options.x_domain
-
-
-    if zs_domain != True:
-        company_id_name_list = Get_Company_Id(company_name, company_list)
-        print(company_id_name_list)
-        company_info_list, company_url_list = Get_ALL_Sub_Cmpany_Domain(company_id_name_list)
-    else:
-        company_info_list = []
+    global company_domain
+    company_domain = args.company_domains
 
     # 调用fofa,yt获取信息
-    get_all_url_fo_yt(company_info_list, company_domains_file)
-    quchong_list, mgwj_list, ld_list,fs_list = quchong_info_list(all_info_list)
+    if args.help:
+        check_msg = ''
+        now_version = 'v1.2.0'
+        new_version = get_latest_release_version()
+        if now_version == new_version:
+            check_msg = '现在是最新版本'
+        else:
+            check_msg = '新版本:'+ new_version + ',请自行进行更新'
 
-    # github监控
-    print(all_company_name_list)
-    # github_list = get_github_info(company_info_list,all_company_name_list)
-    github_list = []
-    if len(quchong_list) != 0 or len(github_list) != 0 or len(mgwj_list) != 0 or len(ld_list) != 0 or len(fs_list) != 0:
-        Write_To_Excel(company_info_list, quchong_list, mgwj_list, ld_list, httpx_info, fs_list)
-        # 发送信息
-        try:
-            set_info = quchong(httpx_info)
-            dingtalk(set_info, mgwj_list, ld_list,fs_list)
-        except:
-            print('发送消息异常')
-            traceback.print_exc()
-            time.sleep(60)
+        print_custom_help(now_version,check_msg)
+    else:
+        # 在这里处理其他参数
+        get_all_url_fo_yt()
+        quchong_list, mgwj_list, ld_list, fs_list, host_scan_list = quchong_info_list(all_info_list)
+
+        if len(quchong_list) != 0 or len(mgwj_list) != 0 or len(ld_list) != 0 or len(
+                fs_list) != 0 or len(host_scan_list) != 0:
+            Write_To_Excel(quchong_list, mgwj_list, ld_list, httpx_info, fs_list, host_scan_list)
+            # 发送信息
             try:
-                dingtalk(set_info, mgwj_list, ld_list, fs_list)
+                set_info = quchong(httpx_info)
+                dingtalk(set_info, mgwj_list, ld_list, fs_list, host_scan_list)
             except:
-                print('网络存在问题,继续执行任务')
+                print('发送消息异常')
+                traceback.print_exc()
+                time.sleep(60)
+                try:
+                    dingtalk(set_info, mgwj_list, ld_list, fs_list, host_scan_list)
+                except:
+                    print('网络存在问题,继续执行任务')
 
-    if notauto != True:
-        time.sleep(360)
-        try:
-            os.system('rm -rf laoyue.out')
-            os.system('nohup python3 laoyue.py -d "SRC.txt" -z -n -m -f -a > laoyue.out 2>&1 &')
-        except:
-            print('laoyue.out文件不存在')
-        # nohup ./check_nohup_size.sh >check_size.out 2>&1 & (运行该命令之前,请先运行build.sh文件或者手动在shell执行命令:sed -i "s/\r//" check_nohup_size.sh,定时检查nohup.out是否变化防止卡死导致自动化停止)
+        if notauto != True:
+            time.sleep(360)
+            try:
+                os.system('rm -rf laoyue.out')
+                os.system('nohup python3 laoyue.py -d "SRC.txt"  -m -f -n -z -a  > laoyue.out 2>&1 &')
+            except:
+                print('laoyue.out文件不存在')

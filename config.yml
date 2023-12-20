@@ -1,0 +1,106 @@
+# 请求相关配置
+http:
+  # 从主机读取数据的超时时间(单位: 秒)
+  readTimeout: 10
+  # 连接主机的超时时间(单位: 秒)
+  connectTimeout: 10
+
+  # 代理设置
+  proxy:
+    # 判断是否启动代理
+    isStart: false
+    # 代理地址
+    host: 127.0.0.1
+    # 代理端口
+    port: 8080
+    # 代理账号
+    username: ""
+    # 代理密码
+    password: ""
+
+  # 扫描协议
+  scanProtocol:
+    # 用于判断是否启动 http 协议,进行 host 碰撞
+    isScanHttp: true
+    # 用于判断是否启动 https 协议,进行 host 碰撞
+    isScanHttps: true
+
+  # 绝对错误的host地址
+  # 没事不要改它, 实在要改也要改成一个绝对不可能解析的成功的地址
+  errorHost: "error.hchostjwdlh666666.com"
+
+  # 相对主机名
+  # 没事也不用改它, 拿来做二次匹配的
+  relativeHostName: "q1w2e3sr4."
+
+# 相似度比例
+# 1 = 100%, 0.7 = 70%
+# 主要用来 host碰撞请求 对比 原请求 与 绝对host错误请求的相似度 超过多少会被认为不存在该问题
+# 例如:
+#   host碰撞请求 与 原请求 相似度超过0.7则认为不存在该问题
+#   host碰撞请求 与 绝对host错误请求的 相似度超过0.7则认为不存在该问题
+similarityRatio: 0.7
+
+# 程序运行的最大线程总数
+# 最小值为1, 小于等于0, 会重置为1
+# 注意:
+#   会自动根据输入的ip总数,来动态启动线程执行任务
+#   设置6的话,意思是最多可以开几个线程来执行任务的意思
+threadTotal: 6
+
+# host碰撞的数据来源地址
+dataSource:
+  # ip 数据来源地址
+  ipFilePath: "./dataSource/ipList.txt"
+  # host 数据来源地址
+  hostFilePath: "./dataSource/hostList.txt"
+
+# 默认的结果输出格式
+# 格式有二种分别是 csv, txt
+defaultResultOutput:
+  isOutputCsv: true
+  isOutputTxt: true
+
+# 判断是否将错误日志输出
+# 开启以后 站点访问失败/host碰撞失败 的结果都会输出到命令行中,方便实时查看
+isOutputErrorLog: true
+
+# 认为碰撞成功的状态码
+# 支持使用逗号分割多个状态码<例如: 200,301,302>
+# 为空表示关闭该功能
+# 注: 开启该功能可以在某些场景获得更好的体验
+collisionSuccessStatusCode: "200"
+
+# 黑名单相关配置
+# 该功能是用于简单的识别waf而产生的,本质上也是为了减少误报
+# 经过实战的使用,发现大厂中对于host碰撞是会有waf进行干扰的,因此需要添加该配置识别waf的一些特征,减少误报
+blacklists:
+  # http请求,header头,Service字段的黑名单列表
+  httpServices:
+    - "waf"
+  # http请求,body的黑名单列表
+  httpBodies:
+    - "document.getElementById(\"mainFrame\").src=\"http://batit.aliyun.com/alww.html\";"
+    - "服务器安全狗防护验证页面"
+    - "该网站暂时无法进行访问，可能由以下原因导致"
+    - "本网站尚未进行备案"
+    - "重获备案号后，如何恢复访问"
+    - "您的请求在Web服务器中没有找到对应的站点"
+    - "检查是否已经绑定到对应站点，若确认已绑定，请尝试重载Web服务"
+    - "您没有将此域名或IP绑定到对应站点"
+    - "若您使用了CDN产品，请尝试清除CDN缓存"
+    - "该访问行为触发了WAF安全策略"
+    - "请将本页面截图以及您正访问的链接地址提交给信息安全中心以需求帮助"
+  # http请求,header头,X-Powered-By字段的黑名单列表
+  httpXPoweredBy:
+    - "waf"
+
+# 数据样本
+# 该功能是用于加强host碰撞的检测功能而生的,开启以后可以有效的减少误报问题
+# 主要是用来防止一个相同的站点里面有,大于一个以上不同的返回值,而导致的误报问题
+dataSample:
+  # 样本请求次数
+  # 最小值为0, 小于等于0, 表示关闭该功能
+  # 程序将会拿该参数,请求n次作为数据的匹配样本
+  # 建议: 建议设置为10次或是以上,因为如果样本少了,那么就没有任何的意义
+  number: 10
