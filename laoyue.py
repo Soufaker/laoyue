@@ -1149,7 +1149,7 @@ def quchong(l1):
     return l
 
 
-def print_custom_help(version,check_msg):
+def print_custom_help(version, check_msg):
     print(f"""
    __                       
   / /__ ____  __ ____ _____ 
@@ -1157,7 +1157,7 @@ def print_custom_help(version,check_msg):
 /_/\_,_/\___/\_, /\_,_/\__/ 
             /___/          
     version: {version}({check_msg}) 
-    
+
 项目地址:
 https://github.com/Soufaker/laoyue(欢迎issues和star)
 
@@ -1187,6 +1187,7 @@ https://github.com/Soufaker/laoyue(欢迎issues和star)
 
     """)
 
+
 # 获取github项目版本
 def get_latest_release_version():
     try:
@@ -1204,6 +1205,7 @@ def get_latest_release_version():
         return data.get("tag_name", "Unknown")
     except Exception as e:
         return "Unknown"
+
 
 if __name__ == '__main__':
     # 参数设置
@@ -1235,8 +1237,6 @@ if __name__ == '__main__':
     dingding_key = ''
     global dingding_hook
     dingding_hook = ''
-    global x_auth_token
-    x_auth_token = ''
     global fofa_size
     fofa_size = ''
     global fofa_keyword
@@ -1276,7 +1276,6 @@ if __name__ == '__main__':
     fofa_email = cf.get('fofa', 'fofa_email')
     dingding_hook = cf.get('dingding', 'access_token')
     dingding_key = cf.get('dingding', 'dsecret')
-    x_auth_token = cf.get('tyz', 'x-auth-token')
     black = cf.get('black_domain', 'domain')
     black_domian = black.split(',')
     dingding_tag = cf.get('tag', 'dingding_tag')
@@ -1330,14 +1329,14 @@ if __name__ == '__main__':
     # 调用fofa,yt获取信息
     if args.help:
         check_msg = ''
-        now_version = 'v1.2.1'
+        now_version = 'v1.2.0'
         new_version = get_latest_release_version()
         if now_version == new_version:
             check_msg = '现在是最新版本'
         else:
-            check_msg = '新版本:'+ new_version + ',请自行进行更新'
+            check_msg = '新版本:' + new_version + ',请自行进行更新'
 
-        print_custom_help(now_version,check_msg)
+        print_custom_help(now_version, check_msg)
     else:
         # 在这里处理其他参数
         get_all_url_fo_yt()
@@ -1366,3 +1365,4 @@ if __name__ == '__main__':
                 os.system('nohup python3 laoyue.py -d "SRC.txt"  -m -f -n -z -a  > laoyue.out 2>&1 &')
             except:
                 print('laoyue.out文件不存在')
+
