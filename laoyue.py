@@ -17,6 +17,7 @@ from datetime import datetime
 import math
 from openpyxl import Workbook
 from configparser import ConfigParser
+import subprocess
 
 requests.packages.urllib3.disable_warnings()
 import urllib
@@ -230,7 +231,7 @@ def isCDN(domain, ip):  # 判断目标是否存在CDN
     try:
         result = os.popen(parm).read()
         l = result.split('Name:')
-        if result.count("Name") > 1 or domain not in l[1]:
+        if result.count("Name") > 1 or domain not in l[1] or 'gslb' in result or 'dns' in result or 'cache' in result:
             return "存在CDN" + str(ip)
         else:
             if ip not in ip_list:
@@ -362,6 +363,11 @@ def get_all_url_fo_yt():
         if is_fofa == '0':
             print('开始使用fofa查询')
             get_fofa_url(all_qc_domain_list)
+        if is_subfinder == '0':
+            print('开启subfinder子域名扫描')
+            run_subfinder(all_qc_domain_list)
+
+
 
 
 # 判断是ip还是域名
@@ -373,7 +379,7 @@ def isIP(str):
         return False
 
 
-def save_cache(target_list):
+def save_cache(target_list,subfinder_list):
     yt_fofa_add_list = []
     yt_fofa_add_list2 = []
     sm_add_list = []
@@ -400,6 +406,12 @@ def save_cache(target_list):
                     str_tar = str_tar + ' | ' + str(t)
                 yt_fofa_add_list.append(str_tar)
                 yt_fofa_add_list2.append(tar)
+    #对比subfinder
+    for l in subfinder_list:
+        l1 = 'https://' + l
+        l2 = 'http://' + l
+        if l1 not in sm_cache_file_list and l2 not in sm_cache_file_list:
+            sm_add_list.append(l)
 
     for l in yt_fofa_add_list:
         caches_file = open('./caches/fo_yt_cache.txt', 'a', encoding='utf-8')
@@ -408,14 +420,19 @@ def save_cache(target_list):
 
     return sm_add_list, yt_fofa_add_list2, sm_cache_file_list
 
+def run_subfinder(all_qc_domain_list):
+    for domain in all_qc_domain_list:
+        print(f"Scanning domain: {domain}")
+        result = subprocess.run(["./inifile/subfinder/subfinder", "-all -d", domain], capture_output=True, text=True)
+        subfinder_list.append(result.stdout)
+
 
 def httpx_naabu_scan(filename, sm_cache_file_list):
     caches_file_list = open('./caches/sm_cache.txt', 'r', encoding='utf-8').read().split('\n')
     caches_file = open('./caches/sm_cache.txt', 'a', encoding='utf-8')
+    caches_file2 = './inifile/naabu/cache/cache.txt'
+
     try:
-        file_list2 = open(filename, 'r', encoding='utf-8').read().split('\n')
-        # print('-------------')
-        # print(file_list2)
         filename_temp = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'temp_port.txt'
         temp_l = open(filename, 'r', encoding='utf-8').read().split('\n')
         # print(temp_l)
@@ -430,10 +447,16 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
                 else:
                     f.writelines(i + '\n')
 
-        filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",
-                                                                  time.localtime()) + 'all_url_list.txt'
+        filename_filter_name = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()) + 'all_url_list.txt'
+        naabu_sm_file = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S",time.localtime()) + '_all_naabu_list.txt'
+        update_cache_and_output_new_lines(caches_file2,new_filename_temp,naabu_sm_file)
+        naabu_list = open(naabu_sm_file, 'r', encoding='utf-8').read().split('\n')
+        print(naabu_list)
+        #如果扫描列表为空就返回1
+        if len(naabu_list) < 2:
+            return 1
 
-        port_scan = './inifile/naabu/naabu  -l ' + new_filename_temp + ' -top-ports 1000 -o ' + filename_temp
+        port_scan = './inifile/naabu/naabu  -l ' + naabu_sm_file + ' -top-ports 1000 -o ' + filename_temp
         # print('2 ' + port_scan)
         os.system(port_scan)  # &> /dev/null
         httpx_filename = filename_temp[0:-4] + '_httpx.txt'
@@ -528,6 +551,26 @@ def httpx_naabu_scan(filename, sm_cache_file_list):
 
         return filename_filter_name
 
+#文件对比
+def update_cache_and_output_new_lines(file_a, file_b, output_file):
+    # 读取文件A的内容到集合
+    with open(file_a, 'r') as fa:
+        lines_a = set(line.strip() for line in fa)
+
+    # 读取文件B并找出新行
+    new_lines = []
+    with open(file_b, 'r') as fb:
+        for line in fb:
+            stripped_line = line.strip()
+            if stripped_line not in lines_a:
+                new_lines.append(stripped_line)
+
+    # 将新行追加到文件A和输出到新文件
+    with open(file_a, 'a') as fa_append, open(output_file, 'w') as out_file:
+        for line in new_lines:
+            fa_append.write(line + '\n')
+            out_file.write(line + '\n')
+
 
 def scan_awvs(file_list):
     if avsm == True:
@@ -554,7 +597,7 @@ def quchong_info_list(all_info_list):
     for all in all_info_list:
         if all not in new_list:
             new_list.append(all)
-    add_list, yt_fofa_info_list, sm_cache_file_list = save_cache(new_list)
+    add_list, yt_fofa_info_list, sm_cache_file_list = save_cache(new_list,subfinder_list)
     add_list = list(set(add_list))
     if len(add_list) != 0:
         filename = './result/allurl/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'all_url_list.txt'
@@ -564,14 +607,17 @@ def quchong_info_list(all_info_list):
                 continue
             print('1' + a)
             try:
-                a1 = a.split('://')[1]
-                print(a1)
-                if ':' in a1:
-                    a1 = a1.split(':')[0]
-                if '/' in a1:
-                    temp_list.append(a1.split('/')[0])
+                if '://' not in a:
+                    temp_list.append(a)
                 else:
-                    temp_list.append(a1)
+                    a1 = a.split('://')[1]
+                    print(a1)
+                    if ':' in a1:
+                        a1 = a1.split(':')[0]
+                    if '/' in a1:
+                        temp_list.append(a1.split('/')[0])
+                    else:
+                        temp_list.append(a1)
             except:
                 continue
         temp_list2 = list(set(temp_list))
@@ -580,23 +626,24 @@ def quchong_info_list(all_info_list):
                 f.writelines(s + '\n')
 
         file_filter_name = httpx_naabu_scan(filename, sm_cache_file_list)
-        print('ssss')
-        print(file_filter_name)
-        # 将生成的url放入对应的域名分类文件中,便于进行host碰撞
-        process_and_save_urls()
-        print('xxxxx')
+        if file_filter_name != 1:
+            print('ssss')
+            print(file_filter_name)
+            # 将生成的url放入对应的域名分类文件中,便于进行host碰撞
+            process_and_save_urls()
+            print('xxxxx')
 
-        if hostm == True:
-            host_scan_list = host_collision()
+            if hostm == True:
+                host_scan_list = host_collision()
 
-        if ml == True:
-            mgwj_list = ml_sm(file_filter_name)
+            if ml == True:
+                mgwj_list = ml_sm(file_filter_name)
 
-        if fs == True:
-            fs_list = fscan(file_filter_name, ip_list)
+            if fs == True:
+                fs_list = fscan(file_filter_name, ip_list)
 
-        if ld == True:
-            ld_list = nuclei(file_filter_name)
+            if ld == True:
+                ld_list = nuclei(file_filter_name)
 
     # 扫描自己收集的资产
     if notauto == True:
@@ -723,7 +770,7 @@ def host_collision():
                 # Splitting the text into lines and adding to the list
                 result = extracted_text.split('\n')
                 for res in result:
-                    if res != '' and '协议' in res:
+                    if res != '' and '协议' in res and '匹配失败-3' not in res and 'title:,' not in res:
                         result_list.append(res)
 
         folder_path = './result/ip_as_domain'
@@ -1182,7 +1229,7 @@ https://github.com/Soufaker/laoyue(欢迎issues和star)
 额外说明:
 1.awvs脚本可单独使用,命令: nohup python3 awvs_monitor.py >awvsput.out 2>&1 &
 2.最好运行监控命令: nohup ./check_nohup_size.sh >check_size.out 2>&1 & 
-3.目前脚本功能逻辑为: fofa,yt(url定期收集)-->naabu(端口扫描)-->httpx(存活探测)-->(对收集的资产的url进行去重,对IP进行cdn检测去重)-->进行host碰撞,漏洞扫描,敏感目录扫描,弱口令探测等-->(归纳信息进行去重)-->本地服务器保存excel-->发送消息(钉钉,企业微信)
+3.目前脚本功能逻辑为: fofa,yt,subfinder(url定期收集)-->naabu(端口扫描)-->httpx(存活探测)-->(对收集的资产的url进行去重,对IP进行cdn检测去重)-->进行host碰撞,漏洞扫描,敏感目录扫描,弱口令探测等-->(归纳信息进行去重)-->本地服务器保存excel-->发送消息(钉钉,企业微信)
 4.后续持续添加新功能和优化速度
 
     """)
@@ -1249,6 +1296,8 @@ if __name__ == '__main__':
     fofa_count = ''
     global hunter_count
     hunter_count = ''
+    global is_subfinder
+    is_subfinder = ''
     global is_fofa
     is_fofa = ''
     global is_hunter
@@ -1268,6 +1317,7 @@ if __name__ == '__main__':
     hunter_count = cf.get('hunter', 'count')
     fofa_size = cf.get('fofa', 'size')
     is_fofa = cf.get('fofa', 'is_fofa')
+    is_subfinder = cf.get('subfinder', 'is_subfinder')
     is_hunter = cf.get('hunter', 'is_hunter')
     yt_size = cf.get('hunter', 'size')
     fofa_keyword = cf.get('fofa', 'keyword')
@@ -1295,6 +1345,10 @@ if __name__ == '__main__':
     # 全局域名和IP的映射表
     global all_domain_ip_list
     all_domain_ip_list = []
+
+    # subfinder扫描的列表
+    global subfinder_list
+    subfinder_list = []
 
     # 初始化
     quchong_list = []
@@ -1329,7 +1383,7 @@ if __name__ == '__main__':
     # 调用fofa,yt获取信息
     if args.help:
         check_msg = ''
-        now_version = 'v1.2.1'
+        now_version = 'v1.2.2'
         new_version = get_latest_release_version()
         if now_version == new_version:
             check_msg = '现在是最新版本'

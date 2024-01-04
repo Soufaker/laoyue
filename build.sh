@@ -4,6 +4,7 @@ chmod 777 ./inifile/naabu/naabu
 chmod 777 ./inifile/httpx/httpx
 chmod 777 ./inifile/lousao/fscan
 chmod 777 ./inifile/ffuf/ffuf
+chmod 777 ./inifile/subfinder/subfinder
 sed -i "s/\r//" check_nohup_size.sh
 chmod 777 check_nohup_size.sh
 systemctl enable docker.service
