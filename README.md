@@ -28,7 +28,7 @@
 
 # 快速开始
 
-1.使用git拉取项目到vps(centos7)服务器,python3即可,java需要1.8环境
+1.使用git拉取项目到vps(centos7/ubutu20)服务器,python3即可,java需要1.8环境
 
 `git clone https://github.com/Soufaker/laoyue.git`
 
@@ -38,9 +38,9 @@
 
 3.注意你自己使用的python3表示方式,有的师傅服务器python3用的是pyhon或者python3.x啥标识,自行更改build.sh中和laoyue.py中的python表示方式.默认为python3
 
-4.使用chmod 777 biuld.sh加权限安装所需依赖
+4.使用chmod 777 biuld.sh加权限安装所需依赖,根据系统环境安装,如果是centos安装build_centos7.sh得,如果是ubutu,就按照build_ubutu.sh
 
-`./build.sh`
+`./build_centos7.sh or ./build_ubutu.sh  `
 
 5.常用命令如下:
 
