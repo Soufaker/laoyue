@@ -423,7 +423,7 @@ def save_cache(target_list,subfinder_list):
 def run_subfinder(all_qc_domain_list):
     for domain in all_qc_domain_list:
         print(f"Scanning domain: {domain}")
-        result = subprocess.run(["./inifile/subfinder/subfinder", "-all -d", domain], capture_output=True, text=True)
+        result = subprocess.run(["./inifile/subfinder/subfinder", "-all","-d", domain], capture_output=True, text=True)
         subfinder_list.append(result.stdout)
 
 
