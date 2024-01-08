@@ -1225,7 +1225,7 @@ https://github.com/Soufaker/laoyue(欢迎issues和star)
 调试命令: python3 laoyue.py -d example.com  -m -f -n -z -a (先跑一个域名,看看能跑通不,能行再使用下面的命令被动监控扫描)
 单域名扫描: nohup python3 laoyue.py -d example.com  -m -f -n -z -a  > laoyue.out 2>&1 &
 多域名扫描: nohup python3 laoyue.py -d "SRC.txt"  -m -f -n -z -a  > laoyue.out 2>&1 &
-被动扫描: nohup python3 laoyue.py -m -n -f -z -a -N &
+被动扫描: nohup python3 laoyue.py -m -n -f -a -N &
 
 额外说明:
 1.awvs脚本可单独使用,命令: nohup python3 awvs_monitor.py >awvsput.out 2>&1 &
