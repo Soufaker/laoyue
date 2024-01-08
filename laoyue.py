@@ -1231,7 +1231,8 @@ https://github.com/Soufaker/laoyue(欢迎issues和star)
 1.awvs脚本可单独使用,命令: nohup python3 awvs_monitor.py >awvsput.out 2>&1 &
 2.最好运行监控命令: nohup ./check_nohup_size.sh >check_size.out 2>&1 & 
 3.目前脚本功能逻辑为: fofa,yt,subfinder(url定期收集)-->naabu(端口扫描)-->httpx(存活探测)-->(对收集的资产的url进行去重,对IP进行cdn检测去重)-->进行host碰撞,漏洞扫描,敏感目录扫描,弱口令探测等-->(归纳信息进行去重)-->本地服务器保存excel-->发送消息(钉钉,企业微信)
-4.后续持续添加新功能和优化速度
+4.因为subfinder第一次会跑很多域名,所以第一次启动会比较慢,后续自动化播报就会变快,想要很快的话可以在配置文件去掉subfinder扫描看个人。
+5.后续持续添加新功能和优化速度
 
     """)
 
