@@ -1219,7 +1219,7 @@ https://github.com/Soufaker/laoyue(欢迎issues和star)
 -f, --fs    : 使用fscan进行漏洞扫描。
 -a, --av    : 使用awvs进行漏洞扫描。
 -z, --hostz : 进行host碰撞。
--N, --notauto: 启用被动扫描模式，手动收集URL资产后使用。
+-N, --notauto: 启用被动扫描模式，手动收集URL资产后使用(资产放在./result/notautolist/notautolist.txt里)。
 
 常用自动化监控命令(可以先不加nohup手动测试一下看看能跑通不,能跑通就用下面的命令,可以自行增加删除参数,下面的是都跑一遍):
 调试命令: python3 laoyue.py -d example.com  -m -f -n -z -a (先跑一个域名,看看能跑通不,能行再使用下面的命令被动监控扫描)
