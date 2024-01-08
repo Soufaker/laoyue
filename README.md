@@ -20,7 +20,7 @@
 -f, --fs    : 使用fscan进行漏洞扫描。
 -a, --av    : 使用awvs进行漏洞扫描。
 -z, --hostz : 进行host碰撞。
--N, --notauto: 启用被动扫描模式，手动收集URL资产后使用。
+-N, --notauto: 启用被动扫描模式，手动收集URL资产后使用(资产放在./result/notautolist/notautolist.txt里)。
 ```
 
 # 声明
