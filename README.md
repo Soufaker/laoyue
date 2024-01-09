@@ -77,7 +77,7 @@ nohup ./check_nohup_size.sh >check_size.out 2>&1 &
 
 ![image-20230306095756391](img/18.png)
 
-![image-20230306095756391](img/19.png)
+![image-20230306095756391](img/20.png)
 
 4.服务器目录下生成文件信息
 
