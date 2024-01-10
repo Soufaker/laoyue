@@ -180,7 +180,7 @@ def yt_get_info(name_list):
                     else:
                         domain_all = domain_all + "domain=" + domain + '||'
             print(domain_all)
-            search_key = '(' + domain_all[0:-2] + ')' + str(fofa_keyword)
+            search_key = '(' + domain_all[0:-2] + ')' + str(yt_keword)
             keyword = base64.urlsafe_b64encode(search_key.encode("utf-8"))  # 把输入的关键字转换为base64编码
             page = 1
             api_num = 0
