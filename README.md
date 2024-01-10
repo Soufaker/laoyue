@@ -28,7 +28,7 @@
 
 # 快速开始
 
-1.使用git拉取项目到vps(centos7/ubutu20)服务器,python3即可,java需要1.8环境
+1.使用git拉取项目到vps(centos7/ubutu20)服务器,python3.7以上即可,java需要1.8环境
 
 `git clone https://github.com/Soufaker/laoyue.git`
 
