@@ -420,11 +420,16 @@ def save_cache(target_list,subfinder_list):
 
     return sm_add_list, yt_fofa_add_list2, sm_cache_file_list
 
+
 def run_subfinder(all_qc_domain_list):
     for domain in all_qc_domain_list:
-        print(f"Scanning domain: {domain}")
-        result = subprocess.run(["./inifile/subfinder/subfinder", "-all","-d", domain], capture_output=True, text=True)
+        print(f"正在扫描域名: {domain}")
+        result = subprocess.run(
+            ["./inifile/subfinder/subfinder", "-all", "-d", domain],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
         subfinder_list.append(result.stdout)
+
 
 
 def httpx_naabu_scan(filename, sm_cache_file_list):
