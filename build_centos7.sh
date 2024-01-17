@@ -7,6 +7,7 @@ chmod 777 ./inifile/ffuf/ffuf
 chmod 777 ./inifile/subfinder/subfinder
 sed -i "s/\r//" check_nohup_size.sh
 chmod 777 check_nohup_size.sh
+chmod 777 update.sh
 systemctl enable docker.service
 chmod 777 ./inifile/bypass403/f403_linux_amd64
 #cp ./inifile/lousao/nuclei-templates/ /root/

@@ -1398,7 +1398,7 @@ if __name__ == '__main__':
         if now_version == new_version:
             check_msg = '现在是最新版本'
         else:
-            check_msg = '新版本:' + new_version + ',请自行进行更新'
+            check_msg = '新版本:' + new_version + ',请使用update.sh脚本进行更新!'
 
         print_custom_help(now_version, check_msg)
     else:
