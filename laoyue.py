@@ -1114,13 +1114,16 @@ def nuclei(filename):
         return list2
 
     for l in list1:
-        temp = []
-        x = l.split(' ')
-        print(x)
-        temp.append(x[0])
-        temp.append(x[2])
-        temp.append(x[3])
-        list2.append(temp)
+        try:
+            temp = []
+            x = l.split(' ')
+            print(x)
+            temp.append(x[0])
+            temp.append(x[2])
+            temp.append(x[3])
+            list2.append(temp)
+        except:
+            continue
     print(list2)
 
     return list2
@@ -1426,4 +1429,3 @@ if __name__ == '__main__':
                 os.system('nohup python3 laoyue.py -d "SRC.txt"  -m -f -n -z -a  > laoyue.out 2>&1 &')
             except:
                 print('laoyue.out文件不存在')
-

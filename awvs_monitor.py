@@ -1,5 +1,7 @@
 # author:Soufaker
 # time:2023/02/24
+import traceback
+
 import requests,json,socket,sys,time
 from time import strftime,gmtime
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -23,6 +25,7 @@ headers = {'Content-Type': 'application/json',"X-Auth": awvs_key}
 
 def target_scan(url,target_id):
     try:
+        monitor_time_scans()
         data = {"target_id": target_id, "profile_id": profile_id, "incremental": False,
                 "schedule": {"disable": False, "start_date": None, "time_sensitive": False}}
         response = requests.post(awvs_url + '/api/v1/scans', data=json.dumps(data), headers=headers, timeout=30, verify=False)
@@ -33,79 +36,90 @@ def target_scan(url,target_id):
         return False
 
 
+
+def moniter_target_id(target_id):
+    # 检测当前扫描个数
+    stats_result = requests.get(url=awvs_url + "/api/v1/me/stats", headers=headers, verify=False)
+    print(stats_result.json())
+    scan_num = stats_result.json().get("scans_running_count")
+    print(scan_num)
+    print(scan_count)
+    try:
+        if int(scan_num) < int(scan_count):
+            target_scan(target_id['targets'][0]['address'],target_id['targets'][0]['target_id'])
+            # 将已经扫描的数据丢入缓存
+            caches_file = open('./result/awvslist/cache.txt', 'a', encoding='utf-8')
+            caches_file.write(target_id['targets'][0]['address'] + '\n')
+            caches_file.close()
+            time.sleep(10)
+        else:
+            cache_target_list.append(target_id)
+    except:
+        print('网络超时,正在重试！')
+
+
+
 def add_target(add_list1,description='AUTO'):
     global temp_sum,temp_high_vul,temp_medium_vul,temp_low_vul
     try:
-        target_id_list = []
         for url in add_list1:
             if '_' not in url:
                 post_data = {"targets": [{"address": url.strip(), "description": description}], "groups": []}
                 add_log = requests.post(awvs_url + '/api/v1/targets/add', data=json.dumps(post_data), headers=headers,
                                         timeout=20, verify=False)
+                print(add_log.content.decode())
                 target_id = json.loads(add_log.content.decode())
-                target_id_list.append(target_id)
-        while len(target_id_list) != 0:
-            #打印目前的漏洞狀態
-            vul_sum,new_high_vul,new_medium_vul,new_low_vul,result,message_push_all = first_push()
-            print('目前漏洞总数为',vul_sum)
-            print('目前临时存储总数为',temp_sum)
-            if int(vul_sum) > int(temp_sum) and len(result) != 0:
-                current_date = str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
-                message_push = str(socket.gethostname()) + '\n' + current_date + '\n'
-                new_low = new_low_vul - temp_low_vul
-                new_medium = new_medium_vul - temp_medium_vul
-                new_high = new_high_vul - temp_high_vul
-                new_sum = vul_sum - temp_sum
-                if new_sum > 30:
-                    message_push = message_push + '亲爱的主人,本次'+tag+'新增加漏洞数量为:'+str(new_sum)+'\n'+'新增加高危数量:'+str(new_high)+'\n'+'新增加中危数量:'+str(new_medium)+'\n'+\
-                                   '新增加低危数量:'+str(new_low)+'\n'+'--------------------------\n'+message_push_all
-                    temp_sum = vul_sum
-                    temp_high_vul = new_high_vul
-                    temp_medium_vul = new_medium_vul
-                    temp_low_vul = new_low_vul
-                    print(message_push)
-                    message_length = int(len(message_push))
-                    print('消息长度',message_length)
-                    try:
-                        push_wechat_group(message_push)
-                    except:
-                        try:
-                            print('xxxxxxxxxxxxx12121')
-                            mid = int(len(message_push)) // 2
-                            push_wechat_group(message_push[0:mid])
-                            push_wechat_group(message_push[mid:])
-                        except:
-                            print('xxxxxxxxxxxxx12121')
-                            mid = int(len(message_push)) // 3
-                            push_wechat_group(message_push[0:mid])
-                            push_wechat_group(message_push[mid:mid+mid])
-                            push_wechat_group(message_push[mid+mid:])
-
-                    #push_wechat_group(message_push_all)
-
-            #状态检测看看有没有超出扫描限制
-            stats_result = requests.get(url=awvs_url + "/api/v1/me/stats", headers=headers, verify=False)
-            scan_num = stats_result.json().get("scans_running_count")
-            if int(scan_num) < int(scan_count):
                 monitor_time_scans()
-                add_url = add_list1.pop(0)
-                try:
-                    if '_' not in add_url:
-                        target_scan(add_url, target_id_list.pop(0)['targets'][0]['target_id'])
-                        # 将已经扫描的数据丢入缓存
-                        caches_file = open('./result/awvslist/cache.txt', 'a', encoding='utf-8')
-                        caches_file.write(add_url + '\n')
-                        caches_file.close()
-                        time.sleep(10)
-                except:
-                    continue
-            else:
-                print('当前运行的扫描任务数量已上限!')
-                time.sleep(10)
-                continue
 
+                # 打印目前的漏洞狀態
+                vul_sum, new_high_vul, new_medium_vul, new_low_vul, result, message_push_all = first_push()
+                print('目前漏洞总数为', vul_sum)
+                print('目前临时存储总数为', temp_sum)
+                if int(vul_sum) > int(temp_sum) and len(result) != 0:
+                    current_date = str(strftime("%Y-%m-%d %H:%M:%S", gmtime()))
+                    message_push = str(socket.gethostname()) + '\n' + current_date + '\n'
+                    new_low = new_low_vul - temp_low_vul
+                    new_medium = new_medium_vul - temp_medium_vul
+                    new_high = new_high_vul - temp_high_vul
+                    new_sum = vul_sum - temp_sum
+                    if new_sum > 30:
+                        message_push = message_push + '亲爱的主人,本次' + tag + '新增加漏洞数量为:' + str(
+                            new_sum) + '\n' + '新增加高危数量:' + str(new_high) + '\n' + '新增加中危数量:' + str(
+                            new_medium) + '\n' + \
+                                       '新增加低危数量:' + str(
+                            new_low) + '\n' + '--------------------------\n' + message_push_all
+                        temp_sum = vul_sum
+                        temp_high_vul = new_high_vul
+                        temp_medium_vul = new_medium_vul
+                        temp_low_vul = new_low_vul
+                        print(message_push)
+                        message_length = int(len(message_push))
+                        print('消息长度', message_length)
+                        try:
+                            push_wechat_group(message_push)
+                        except:
+                            try:
+                                print('xxxxxxxxxxxxx12121')
+                                mid = int(len(message_push)) // 2
+                                push_wechat_group(message_push[0:mid])
+                                push_wechat_group(message_push[mid:])
+                            except:
+                                print('xxxxxxxxxxxxx12121')
+                                mid = int(len(message_push)) // 3
+                                push_wechat_group(message_push[0:mid])
+                                push_wechat_group(message_push[mid:mid + mid])
+                                push_wechat_group(message_push[mid + mid:])
+
+                        # push_wechat_group(message_push_all)
+
+                while len(cache_target_list) != 0:
+                    print(cache_target_list)
+                    moniter_target_id(cache_target_list.pop(0))
+
+                moniter_target_id(target_id)
 
     except Exception as e:
+        traceback.print_exc()
         print('配置出错了', e)
         return False
 
@@ -222,19 +236,49 @@ def get_url_list():
 
     return add_real_list
 
+def update_newurl_with_cache(cache_file, newurl_file):
+    temp_file = newurl_file + '.tmp'
+
+    with open(newurl_file, 'r') as newurl, open(temp_file, 'w') as temp_out:
+        for newurl_line in newurl:
+            found = False
+            newurl_line = newurl_line.strip()
+
+            # 检查newurl中的每一行是否在cache中
+            with open(cache_file, 'r') as cache:
+                for cache_line in cache:
+                    if cache_line.strip() == newurl_line:
+                        found = True
+                        break
+
+            # 如果没有找到，则写入临时文件
+            if not found:
+                temp_out.write(newurl_line + '\n')
+
+    # 替换原始newurl文件
+    os.replace(temp_file, newurl_file)
+
+
 def main():
+    global cache_target_list
     global add_url_list
     global temp_sum, temp_high_vul, temp_medium_vul, temp_low_vul
     add_url_list = []
+    cache_target_list = []
     temp_sum,temp_high_vul,temp_medium_vul,temp_low_vul,result,message = first_push()
+    # Example usage
+    cache_file = './result/awvslist/cache.txt'
+    newurl_file = './result/awvslist/all_av_list.txt'
     while True:
+        #更新文件
+        update_newurl_with_cache(cache_file, newurl_file)
         add_list1 = get_url_list()
         monitor_time_scans()
         time.sleep(0.1)
         try:
             if len(add_list1) != 0:
                 print('开始添加')
-                print(add_list1)
+                #print(add_list1)
                 add_target(add_list1,'auto_scan')
         except Exception as e:
             print('urL',e)
