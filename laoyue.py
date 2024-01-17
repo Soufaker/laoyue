@@ -1393,7 +1393,7 @@ if __name__ == '__main__':
     # 调用fofa,yt获取信息
     if args.help:
         check_msg = ''
-        now_version = 'v1.2.3'
+        now_version = 'v1.2.4'
         new_version = get_latest_release_version()
         if now_version == new_version:
             check_msg = '现在是最新版本'
