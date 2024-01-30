@@ -1097,39 +1097,26 @@ def fscan(filename, ip_list):
 
 
 def nuclei(filename):
-    os.system('./inifile/lousao/nuclei -update')
-    os.system('./inifile/lousao/nuclei -update-templates ')
+    #os.system('./inifile/lousao/nuclei -update')
+    #os.system('./inifile/lousao/nuclei -update-templates ')
     loud_file = './result/loudong/' + time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()) + 'ld_scan.txt'
     # os.system('./inifile/lousao/nuclei -un -ut')
-    os.system('./inifile/lousao/nuclei -mhe 3 -timeout 1 -rl 300 -c 50  -s low,medium,high,critical -l ' + str(
+    os.system('./inifile/lousao/nuclei -mhe 3 -timeout 1 -rl 30000 -c 10000  -s medium,high,critical -l ' + str(
         filename) + ' -o ' + str(loud_file))
-    list1 = []
-    list2 = []
-    try:
-        with open(loud_file, 'r') as f:
-            print(loud_file)
-            test1 = f.readlines()
-            for t in test1:
-                if t[0] != '#' and t[0] != '\n':
-                    list1.append(t.strip('\n'))
-    except:
-        print('该网站无漏洞信息')
-        return list2
+    result = []
+    valid_keywords = ['info', 'low', 'high', 'critical']
+    result_list = open('tt.txt', 'r', encoding='utf-8').read().split('\n')
+    # 解析每一行
+    for line in result_list:
+        info = []
+        # 检查行的开头
+        if line.startswith('[') and any(keyword in line for keyword in valid_keywords):
+            info.append(line.split(' ')[0])
+            info.append(line.split(' ')[2])
+            info.append(line.split(' ')[3])
+            result.append(info)
 
-    for l in list1:
-        try:
-            temp = []
-            x = l.split(' ')
-            print(x)
-            temp.append(x[0])
-            temp.append(x[2])
-            temp.append(x[3])
-            list2.append(temp)
-        except:
-            continue
-    print(list2)
-
-    return list2
+    return result
 
 
 def process_and_save_urls():
