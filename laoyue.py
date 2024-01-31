@@ -1285,7 +1285,7 @@ def print_custom_help(version, check_msg):
  / / _ `/ _ \/ // / // / -_)
 /_/\_,_/\___/\_, /\_,_/\__/ 
             /___/          
-    version: {version}({check_msg}) 
+    version: {version}({check_msg}) (多线程版本)
 
 项目地址:
 https://github.com/Soufaker/laoyue(欢迎issues和star)
@@ -1300,14 +1300,14 @@ https://github.com/Soufaker/laoyue(欢迎issues和star)
 -n, --nl    : 使用nuclei进行漏洞扫描。
 -f, --fs    : 使用fscan进行漏洞扫描。
 -a, --av    : 使用awvs进行漏洞扫描。
--z, --hostz : 进行host碰撞。
+-z, --hostz : 进行host碰撞(暂时停止使用后续优化,目前误报很多)。
 -N, --notauto: 启用被动扫描模式，手动收集URL资产后使用(资产放在./result/notautolist/notautolist.txt里)。
 
 常用自动化监控命令(可以先不加nohup手动测试一下看看能跑通不,能跑通就用下面的命令,可以自行增加删除参数,下面的是都跑一遍):
-调试命令: python3 laoyue.py -d example.com  -m -f -n -z -a (先跑一个域名,看看能跑通不,能行再使用下面的命令被动监控扫描)
-单域名扫描: nohup python3 laoyue.py -d example.com  -m -f -n -z -a  > laoyue.out 2>&1 &
-多域名扫描: nohup python3 laoyue.py -d "SRC.txt"  -m -f -n -z -a  > laoyue.out 2>&1 &
-被动扫描: nohup python3 laoyue.py -m -n -f -a -N &
+调试命令: python3 laoyue.py -d example.com  -m -f -n  -a (先跑一个域名,看看能跑通不,能行再使用下面的命令被动监控扫描)
+单域名扫描: nohup python3 laoyue.py -d example.com  -m -f -n -a  > laoyue.out 2>&1 &
+多域名扫描: nohup python3 laoyue.py -d "SRC.txt"  -m -f -n -a  > laoyue.out 2>&1 &
+被动扫描: nohup python3 laoyue.py -m -n -f -a -N & (适用于hvv给的固定资产扫描方式,url/ip直接放到./result/notautolist/notautolist.txt里启动扫描)
 
 额外说明:
 1.awvs脚本可单独使用,命令: nohup python3 awvs_monitor.py >awvsput.out 2>&1 &
@@ -1473,7 +1473,7 @@ if __name__ == '__main__':
     # 调用fofa,yt获取信息
     if args.help:
         check_msg = ''
-        now_version = 'v1.2.4'
+        now_version = 'v1.2.6'
         new_version = get_latest_release_version()
         if now_version == new_version:
             check_msg = '现在是最新版本'
